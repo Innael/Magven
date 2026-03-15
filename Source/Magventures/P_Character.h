@@ -27,6 +27,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Health")
 	bool Live = true;
+		
+	UPROPERTY(BlueprintReadWrite)
+	bool CanAct = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	bool Unconscious = false;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool AlreadyMove = false;
@@ -34,14 +40,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack = 10;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentDamage = 7;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
 	float CurrentDefence = 5;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Formation")
-	int32 Formation = 1;
+	int32 Formation = 1; // Положение персонажа в боевом построении отряда.
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Position")
-	int32 Position = 1;
+	int32 Position = 1;  // Положение персонажа на панели интерфейса. 
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Position")
+	int32 PlayerActionTypeInd = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Melee | Weapon | Range")
+	int32 PlayerMeleeRangeType = 1;
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,6 +66,12 @@ protected:
 	float MaxHealth = 100.0f;
 
 	float Health = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
+	float MaxStamina = 100;
+
+	UPROPERTY(BlueprintReadWrite)
+	float CurrentStamina = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initiative")
 	int32 Initiative = 5;
@@ -72,5 +93,8 @@ public:
 	}
 
 	void ChangeHealth(float NewHealth);
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void ChangeStamina(float NewStamina);
 
 };

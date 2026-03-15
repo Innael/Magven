@@ -106,7 +106,16 @@ protected:
 	int32 RoundNumber = 0;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Combat | Tactics")
-	float AttackRange = 300.f;	
+	float AttackRange = 300.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stamina")
+	float AttackStaminaCost = 10.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stamina")
+	float DodgeStaminaCost = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stamina")
+	float ReciveAttackStaminaCost = 2.f;
 
 	void SetFormation();
 
@@ -130,5 +139,9 @@ protected:
 	void EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult);
 
 	void RangedCombat(ACHEnemyCharacter* Enemy);
+
+	bool CheckPlayerTarget(ACHEnemyCharacter* Enemy, AP_Character* Character);
+
+	void PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
 };

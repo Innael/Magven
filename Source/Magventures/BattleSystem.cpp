@@ -212,15 +212,15 @@ void UBattleSystem::SetFormation() {
 	{
 		if (elem->WType == 'P')
 		{
-			if (elem->PlayerPawn->Formation == 1)
+			if (elem->PlayerPawn->Formation == 1 && elem->PlayerPawn->Live)
 				FormationCentre = true;
-			if (elem->PlayerPawn->Formation == 2)
+			if (elem->PlayerPawn->Formation == 2 && elem->PlayerPawn->Live)
 				FormationFront = true;
-			if (elem->PlayerPawn->Formation == 3)
+			if (elem->PlayerPawn->Formation == 3 && elem->PlayerPawn->Live)
 				FormationLeft = true;
-			if (elem->PlayerPawn->Formation == 4)
+			if (elem->PlayerPawn->Formation == 4 && elem->PlayerPawn->Live)
 				FormationRight = true;
-			if (elem->PlayerPawn->Formation == 5)
+			if (elem->PlayerPawn->Formation == 5 && elem->PlayerPawn->Live)
 				FormationRear = true;
 		}
 		
@@ -291,21 +291,117 @@ void UBattleSystem::EnemyAttack(ACHEnemyCharacter* Enemy, TArray<UCombatCharacte
 	FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->Name);
 	FString WrappedString2 = FormatLogName(CharactersAtEnemy[TargetLock]->PlayerPawn->Name, CharactersAtEnemy[TargetLock]->PlayerPawn->Position);
 
+	Enemy->ChangeStamina(-AttackStaminaCost);
+
 	if (EA <= PD)
 	{
+		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeStamina(-DodgeStaminaCost);
 		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResMiss);
 	}
 	else
 	{
 		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeHealth(-Enemy->CurrentDamage);
+		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeStamina(-ReciveAttackStaminaCost);
 		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(Enemy->CurrentDamage) + AttackResDammage);
 	}
 }
 
 
 void UBattleSystem::PlayerTurn(AP_Character* Character) {
+
+	Fighters.RemoveAll(
+		[](UCombatCharacterWrapper* Wrapper)
+		{			
+			if (!Wrapper)
+				return true;
+			
+			return (Wrapper->WType == 'E' && Wrapper->EnemyCharacter == nullptr);
+		});
+
+	if (Character->PlayerActionTypeInd == 1)
+	{
+		if (!Character->ChosenEnemy)
+		{
+			for (const auto& elem : Fighters){
+				if (elem->WType == 'E'){
+					float Distance = FVector::Dist(elem->EnemyCharacter->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+					if (Distance <= 300)
+					{
+						Character->ChosenEnemy = elem->EnemyCharacter;
+						break;
+					}
+						
+				}
+			}
+		}
+		
+		if (Character->ChosenEnemy){
+			float Distance = FVector::Dist(Character->ChosenEnemy->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+			if (Distance <= 300)
+			{
+				bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+				
+				if (CanAttackNow){
+					PlayerAttack(Character->ChosenEnemy, Character);
+				}
+				else
+				{
+					for (const auto& elem : Fighters)
+					{
+						if (elem->WType == 'E')
+						{
+							float Dist = FVector::Dist(elem->EnemyCharacter->GetActorLocation(),
+								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+							if (Dist <= 300)
+							{
+								Character->ChosenEnemy = elem->EnemyCharacter;
+							}
+						}
+						if (Character->ChosenEnemy)
+						{
+							CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+
+							if (CanAttackNow)
+							{
+								PlayerAttack(Character->ChosenEnemy, Character);
+								break;
+							}
+						}
+					}
+				}
+
+			}
+			else
+			{
+				for (const auto& elem : Fighters)
+				{
+					if (elem->WType == 'E')
+					{
+						float Dist = FVector::Dist(elem->EnemyCharacter->GetActorLocation(),
+							GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+						if (Dist <= 300)
+						{
+							Character->ChosenEnemy = elem->EnemyCharacter;							
+						}
+					}
+					if (Character->ChosenEnemy)
+					{
+						bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+
+						if (CanAttackNow)
+						{
+							PlayerAttack(Character->ChosenEnemy, Character);
+							break;
+						}
+					}
+				}				
+			}
+		}
+	}
+
 	NextFighterTurn();
 }
+
 
 int32 UBattleSystem::GetRandomCombatValue(int32 MaxValue) {
 	// Защита от некорректного ввода (если MaxValue меньше 1)
@@ -314,6 +410,7 @@ int32 UBattleSystem::GetRandomCombatValue(int32 MaxValue) {
     // FMath::RandRange(Min, Max) включает обе границы
     return FMath::RandRange(1, MaxValue);
 }
+
 
 FString UBattleSystem::FormatLogName(FString CharName, int32 TypeIndex)
 {
@@ -325,6 +422,7 @@ FString UBattleSystem::FormatLogName(FString CharName, int32 TypeIndex)
 
 	return StyledName;
 }
+
 
 void UBattleSystem::NextFighterTurn()
 {
@@ -382,6 +480,7 @@ void UBattleSystem::ExecuteNextFighterTurn()
 	
 }
 
+
 void UBattleSystem::EndTurn() {
 
 	Fighters.RemoveAll([](UCombatCharacterWrapper* Wrapper) {
@@ -426,6 +525,7 @@ void UBattleSystem::EndTurn() {
 	FString RoundEndEndStr = TEXT(" закончен.");
 	HUD->BtLog(RoundEndStartStr + RoundEndEndStr);
 }
+
 
 void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 {
@@ -653,6 +753,7 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 	NextFighterTurn();
 }
 
+
 void UBattleSystem::RangedCombat(ACHEnemyCharacter* Enemy)
 {
 	TArray<UCombatCharacterWrapper*> CharactersAtRange;
@@ -685,6 +786,7 @@ void UBattleSystem::RangedCombat(ACHEnemyCharacter* Enemy)
 		Enemy->ShotResult = 0;
 }
 
+
 void UBattleSystem::EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult)
 {
 	if (!Enemy->CurrentTarget)
@@ -700,15 +802,18 @@ void UBattleSystem::EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult)
 
 	if (ShotResult > 0)
 	{
+		Enemy->CurrentTarget->ChangeStamina(-DodgeStaminaCost);
 		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResMiss);
 	}
 	else
 	{
 		Enemy->CurrentTarget->ChangeHealth(-Enemy->CurrentRangeDamage);
+		Enemy->CurrentTarget->ChangeStamina(-ReciveAttackStaminaCost);
 		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(Enemy->CurrentDamage) + AttackResDammage);
 	}
 	NextFighterTurn();
 }
+
 
 void UBattleSystem::EnemyUnconsciousMessage(const ACHEnemyCharacter* Enemy) 
 {
@@ -718,3 +823,130 @@ void UBattleSystem::EnemyUnconsciousMessage(const ACHEnemyCharacter* Enemy)
 	HUD->BtLog(WrappedString1 + TempStr);
 }
 
+
+bool UBattleSystem::CheckPlayerTarget(ACHEnemyCharacter* Enemy, AP_Character* Character)
+{
+	if (!Enemy || !Character)
+		return false;
+	
+	ResetFormation();
+	SetFormation();
+
+	EFormationSide EnemyPosition = GetEnemyRelativePosition(Character->ChosenEnemy);
+
+	if (EnemyPosition == EFormationSide::Front)
+	{
+		if (Character->Formation == 2)
+			return true;
+
+		if (Character->Formation == 1 || Character->Formation == 3 || Character->Formation == 4)
+		{
+			if (!FormationFront || Character->PlayerMeleeRangeType == 2)
+				return true;			
+		}
+		else
+		{
+			if (!FormationCentre && !FormationLeft && !FormationRight)
+				return true;
+			else if (!FormationFront && Character->PlayerMeleeRangeType == 2)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	if (EnemyPosition == EFormationSide::Left)
+	{
+		if (Character->Formation == 3)
+			return true;
+
+		if (Character->Formation == 1 || Character->Formation == 2 || Character->Formation == 5)
+		{
+			if (!FormationLeft || Character->PlayerMeleeRangeType == 2)
+				return true;
+		}
+		else
+		{
+			if (!FormationCentre && !FormationRear && !FormationFront)
+				return true;
+			else if (!FormationLeft && Character->PlayerMeleeRangeType == 2)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	if (EnemyPosition == EFormationSide::Right)
+	{
+		if (Character->Formation == 4)
+			return true;
+
+		if (Character->Formation == 1 || Character->Formation == 2 || Character->Formation == 5)
+		{
+			if (!FormationRight || Character->PlayerMeleeRangeType == 2)
+				return true;
+		}
+		else
+		{
+			if (!FormationCentre && !FormationLeft && !FormationRight)
+				return true;
+			else if (!FormationRight && Character->PlayerMeleeRangeType == 2)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	if (EnemyPosition == EFormationSide::Back)
+	{
+		if (Character->Formation == 5)
+			return true;
+
+		if (Character->Formation == 1 || Character->Formation == 3 || Character->Formation == 4)
+		{
+			if (!FormationRear || Character->PlayerMeleeRangeType == 2)
+				return true;
+		}
+		else
+		{
+			if (!FormationCentre && !FormationLeft && !FormationRight)
+				return true;
+			else if (!FormationRear && Character->PlayerMeleeRangeType == 2)
+				return true;
+			else
+				return false;
+		}
+	}
+	return false;
+}
+
+void UBattleSystem::PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Character) {
+
+	Dice = GetRandomCombatValue(10);
+	int32 PA = Character->CurrentAttack * Dice;
+	Dice = GetRandomCombatValue(10);
+	int32 ED = Enemy->CurrentDefence * Dice;
+
+	FString tempStr = TEXT(" атакует врага, по имени ");
+	FString AttackResMiss = TEXT(" и промахивается.");
+	FString AttackResHit = TEXT(" и наносит ");
+	FString AttackResDammage = TEXT(" урона.");
+
+	FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->Name);
+	FString WrappedString2 =
+		FormatLogName(Character->Name, Character->Position);
+
+	Character->ChangeStamina(-AttackStaminaCost);
+
+	if (PA <= ED)
+	{
+		Enemy->ChangeStamina(-DodgeStaminaCost);
+		HUD->BtLog(WrappedString2 + tempStr + WrappedString1 + AttackResMiss);
+	}
+	else
+	{
+		Enemy->ChangeHealth(-Character->CurrentDamage);
+		Enemy->ChangeStamina(-ReciveAttackStaminaCost);
+		HUD->BtLog(WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(Character->CurrentDamage) + AttackResDammage);
+	}
+}

@@ -44,3 +44,20 @@ void AP_Character::ChangeHealth(float NewHealth){
 	}
 }
 
+void AP_Character::ChangeStamina(float NewStamina)
+{
+	CurrentStamina += NewStamina;
+	if (CurrentStamina > MaxStamina)
+		CurrentStamina = MaxStamina;
+
+	if (CurrentStamina <= 0)
+	{
+		Unconscious = true;
+		CanAct = false;
+	}
+	else
+	{
+		Unconscious = false;
+	}
+}
+
