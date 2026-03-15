@@ -32,11 +32,15 @@ void AP_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 }
 
-void AP_Character::ChangeHealth(float& NewHealth){
-	Health -= NewHealth;
+void AP_Character::ChangeHealth(float NewHealth){
+	Health += NewHealth;
 	if (Health <= 0)
 	{
 		Health = 0;
+	}
+	if (Health > MaxHealth)
+	{
+		Health = MaxHealth;
 	}
 }
 

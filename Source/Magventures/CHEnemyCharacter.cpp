@@ -2,6 +2,7 @@
 
 
 #include "CHEnemyCharacter.h"
+#include "P_Character.h"
 
 // Sets default values
 ACHEnemyCharacter::ACHEnemyCharacter()
@@ -25,5 +26,33 @@ void ACHEnemyCharacter::Tick(float DeltaTime)
 
 }
 
-void ACHEnemyCharacter::ChangeHealth(int32& NewHealth) {
+void ACHEnemyCharacter::ChangeHealth(float NewHealth) {
+}
+
+void ACHEnemyCharacter::ChangeStamina(float NewStamina) {
+	CurrentStamina += NewStamina;
+	if (CurrentStamina > MaxStamina)
+		CurrentStamina = MaxStamina;
+
+	if (CurrentStamina <= 0)
+	{
+		Unconscious = true;
+		CanAct = false;
+		OnStatusChanged.Broadcast();
+	}
+	else
+	{
+		Unconscious = false;
+		OnStatusChanged.Broadcast();
+	}
+}
+
+void ACHEnemyCharacter::CheckStatus()
+{
+	CanAct = true;
+	CanAttack = true;
+	if (Unconscious)
+	{
+		CanAct = false;
+	}
 }

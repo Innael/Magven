@@ -76,10 +76,7 @@ void UBattleSystem::StartBattle(TArray<AP_Character*> PC_Arr)
 			else if (elem->WType == 'P')
 			{
 			}
-
 			
-
-			UE_LOG(LogTemp, Warning, TEXT("Character: %s, Initiative: %d"), *elem->Name, elem->WInic);
 
 			FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->Name);
 			FString WrappedString2 = FString::Printf(TEXT("<Green>%s</>"), *elem->Name);
@@ -240,6 +237,8 @@ void UBattleSystem::ResetFormation()
 }
 
 void UBattleSystem::StartTurn() {
+	++RoundNumber;
+
 	Fighters.Sort([&](const UCombatCharacterWrapper& A, const UCombatCharacterWrapper& B) -> bool { return A.WInic > B.WInic; });
 	ResetFormation();
 	SetFormation();
@@ -249,12 +248,28 @@ void UBattleSystem::StartTurn() {
 
 void UBattleSystem::EnemyTurn(ACHEnemyCharacter* Enemy) {
 
+	if (Enemy->Unconscious)
+	{
+		NextFighterTurn();
+		return;
+	}
+		
+
 	float Distance = FVector::Dist(Enemy->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 
 	if (Distance > AttackRange)
 	{
-		Enemy->NeedMove = true;
-		Enemy->MoveEnd = false;
+		if (Enemy->ArcherClass)
+		{
+			RangedCombat(Enemy);
+			Enemy->NeedShoot = true;
+		}
+		else
+		{
+			Enemy->NeedMove = true;
+			Enemy->MoveEnd = false;
+		}
+		
 	}
 	else
 		CloseCombat(Enemy);
@@ -282,7 +297,7 @@ void UBattleSystem::EnemyAttack(ACHEnemyCharacter* Enemy, TArray<UCombatCharacte
 	}
 	else
 	{
-		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeHealth(Enemy->CurrentDamage);
+		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeHealth(-Enemy->CurrentDamage);
 		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(Enemy->CurrentDamage) + AttackResDammage);
 	}
 }
@@ -331,13 +346,14 @@ void UBattleSystem::ExecuteNextFighterTurn()
 			{
 				if (elem->WType == 'E')
 				{
-					if (elem->EnemyCharacter->CanAct)
-					{
-						elem->EnemyCharacter->AlreadyMove = true;
-						elem->AlMov = true;
+					elem->EnemyCharacter->AlreadyMove = true;
+					elem->AlMov = true;
+					if (elem->EnemyCharacter->CanAct)					{
+						
 						HUD->BP_RotateCameraToActor(elem->EnemyCharacter);
 						EnemyTurn(elem->EnemyCharacter);
-					}
+						break;
+					}					
 					
 				}
 
@@ -346,15 +362,18 @@ void UBattleSystem::ExecuteNextFighterTurn()
 					elem->PlayerPawn->AlreadyMove = true;
 					elem->AlMov = true;
 					PlayerTurn(elem->PlayerPawn);
-				}
-
-				elem->AlMov = true;
-				AllFightersMoves = false;
-				break;
+					break;
+				}				
+				
 			}
 		}
 	}
 		
+	for (const auto& elem : Fighters)
+	{
+		if (!elem->AlMov)
+			AllFightersMoves = false;
+	}
 	
 	if (AllFightersMoves)
 	{
@@ -365,6 +384,47 @@ void UBattleSystem::ExecuteNextFighterTurn()
 
 void UBattleSystem::EndTurn() {
 
+	Fighters.RemoveAll([](UCombatCharacterWrapper* Wrapper) {
+		// 1. Проверка на валидность самой обёртки (на всякий случай)
+		if (!Wrapper)
+			return true;
+
+		// 2. Условие: Тип 'E' (Enemy) И пустой указатель на персонажа
+			return (Wrapper->WType == 'E' && Wrapper->EnemyCharacter == nullptr);
+	});
+
+	for (const auto& elem : Fighters)
+	{
+		if (elem != nullptr)
+		{
+			
+				if (elem->WType == 'E')
+				{
+					float StRegen = elem->EnemyCharacter->MaxStamina / 10;
+					elem->EnemyCharacter->ChangeStamina(StRegen);
+					elem->EnemyCharacter->CheckStatus();
+					elem->EnemyCharacter->CurrentMovementPoints = elem->EnemyCharacter->MaxMovementPoints;
+					if (elem->EnemyCharacter->CanAct)
+					{
+						elem->EnemyCharacter->AlreadyMove = false;
+						elem->AlMov = false;
+						elem->EnemyCharacter->CanAttack = true;				
+						
+					}
+				}
+
+				if (elem->WType == 'P')
+				{
+					elem->PlayerPawn->AlreadyMove = false;
+					elem->AlMov = false;
+				}								
+			
+		}
+	}
+	FString RoundEndStartStr = TEXT("Боевой ход, номер ");
+	RoundEndStartStr += FString::FromInt(RoundNumber);
+	FString RoundEndEndStr = TEXT(" закончен.");
+	HUD->BtLog(RoundEndStartStr + RoundEndEndStr);
 }
 
 void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
@@ -592,3 +652,69 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 
 	NextFighterTurn();
 }
+
+void UBattleSystem::RangedCombat(ACHEnemyCharacter* Enemy)
+{
+	TArray<UCombatCharacterWrapper*> CharactersAtRange;
+	int32 CountCharatersAtRange = 0;
+
+	for (const auto& elem : CharactersPawns)
+	{
+		if (elem->PlayerPawn->Live)
+		{
+			++CountCharatersAtRange;
+			CharactersAtRange.Add(elem);
+		}
+	}
+
+	int32 TargetLock = GetRandomCombatValue(CountCharatersAtRange) - 1;
+	Dice = GetRandomCombatValue(10);
+	int32 EA = Enemy->CurrentRangeAttack * Dice;
+	Enemy->CurrentTarget = CharactersAtRange[TargetLock]->PlayerPawn;
+	Dice = GetRandomCombatValue(10);
+	int32 PD = CharactersAtRange[TargetLock]->PlayerPawn->CurrentDefence * Dice;
+
+	if (EA <= PD){
+		if (EA > (PD / 2)){
+			Enemy->ShotResult = 1;
+		}
+		else
+			Enemy->ShotResult = 2;
+	}
+	else
+		Enemy->ShotResult = 0;
+}
+
+void UBattleSystem::EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult)
+{
+	if (!Enemy->CurrentTarget)
+		return;
+
+	FString tempStr = TEXT(" стреляет в героя по имени ");
+	FString AttackResMiss = TEXT(" и промахивается.");
+	FString AttackResHit = TEXT(" и наносит ");
+	FString AttackResDammage = TEXT(" урона.");
+
+	FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->Name);
+	FString WrappedString2 = FormatLogName(Enemy->CurrentTarget->Name, Enemy->CurrentTarget->Position);
+
+	if (ShotResult > 0)
+	{
+		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResMiss);
+	}
+	else
+	{
+		Enemy->CurrentTarget->ChangeHealth(-Enemy->CurrentRangeDamage);
+		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(Enemy->CurrentDamage) + AttackResDammage);
+	}
+	NextFighterTurn();
+}
+
+void UBattleSystem::EnemyUnconsciousMessage(const ACHEnemyCharacter* Enemy) 
+{
+	FString TempStr = TEXT(" теряет сознание от усталости.");
+
+	FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->Name);
+	HUD->BtLog(WrappedString1 + TempStr);
+}
+

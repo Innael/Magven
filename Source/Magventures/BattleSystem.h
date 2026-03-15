@@ -47,7 +47,7 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	void ExecuteNextFighterTurn();
 
 	UFUNCTION(BlueprintCallable, Category = "Battle")
-	void NextFighterTurn();	
+	void NextFighterTurn();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	// Переменные для хранения состояния боя
@@ -96,8 +96,14 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Combat | Tactics")
 	EFormationSide GetEnemyRelativePosition(const ACHEnemyCharacter* Enemy);
 
+	UFUNCTION(BlueprintCallable)
+	void EnemyUnconsciousMessage(const ACHEnemyCharacter* Enemy);
+
 	UPROPERTY()
 	int32 Dice = 1;
+
+	UPROPERTY()
+	int32 RoundNumber = 0;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Combat | Tactics")
 	float AttackRange = 300.f;	
@@ -112,10 +118,17 @@ protected:
 
 	void PlayerTurn(AP_Character* Character);
 
-	FString FormatLogName(FString CharName, int32 TypeIndex);	
+	FString FormatLogName(FString CharName, int32 TypeIndex);
+	
 
 	void EndTurn();
 
+	UFUNCTION(BlueprintCallable)
 	void CloseCombat(ACHEnemyCharacter* Enemy);
+
+	UFUNCTION(BlueprintCallable)
+	void EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult);
+
+	void RangedCombat(ACHEnemyCharacter* Enemy);
 
 };

@@ -71,6 +71,6 @@ public:
 	int32 GetCurrentInitiative() { return CurrentInitiative;
 	}
 
-	void ChangeHealth(float& NewHealth);
+	void ChangeHealth(float NewHealth);
 
 };
