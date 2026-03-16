@@ -143,6 +143,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult);
 
+	UFUNCTION(BlueprintCallable)
 	void RangedCombat(ACHEnemyCharacter* Enemy);
 
 	bool CheckPlayerTarget(ACHEnemyCharacter* Enemy, AP_Character* Character);

@@ -122,4 +122,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Status")
 	void CheckStatus();
 
+	UFUNCTION(BlueprintCallable)
+	bool CanSeeTarget(AActor* Target);
+
 };

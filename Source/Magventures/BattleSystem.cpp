@@ -261,8 +261,16 @@ void UBattleSystem::EnemyTurn(ACHEnemyCharacter* Enemy) {
 	{
 		if (Enemy->ArcherClass)
 		{
-			RangedCombat(Enemy);
-			Enemy->NeedShoot = true;
+			if (Enemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+			{
+				RangedCombat(Enemy);
+				Enemy->NeedShoot = true;
+			}else 
+			{
+				Enemy->NeedMove = true;
+				Enemy->MoveEnd = false;
+			}
+			
 		}
 		else
 		{

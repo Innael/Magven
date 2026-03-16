@@ -56,3 +56,31 @@ void ACHEnemyCharacter::CheckStatus()
 		CanAct = false;
 	}
 }
+
+bool ACHEnemyCharacter::CanSeeTarget(AActor* Target)
+{
+	if (!Target)
+		return false;
+
+	FHitResult HitResult;
+	FVector StartLocation = GetActorLocation() + FVector(0, 0, 70); // GetMesh()->GetSocketLocation("MissileSocket");  
+	FVector EndLocation = Target->GetActorLocation();			  // В центр игрока
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this); // Игнорируем себя
+
+	// Пускаем луч по каналу видимости (Visibility)
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_GameTraceChannel1, Params);
+
+	if (bHit)
+	{
+		// Если луч во что-то врезался, проверяем: это наша цель или стена?
+		AActor* HitActor = HitResult.GetActor();
+		if (HitActor == Target)
+		{
+			return true; // Видим цель напрямую
+		}
+	}
+
+	return false; // Между нами стена или другой объект
+}
