@@ -23,6 +23,8 @@ enum class EFormationSide : uint8
 	Right UMETA(DisplayName = "Right")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCharacterChangeTarget);
+
 UCLASS(Blueprintable)
 class MAGVENTURES_API UBattleSystem : public UObject
 {
@@ -31,6 +33,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	public:
 	// Конструктор
 	UBattleSystem();
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FCharacterChangeTarget CharacterTargetChanged;
 
 	// Пример функции для начала боя
 	UFUNCTION(BlueprintCallable, Category = "Battle")

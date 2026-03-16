@@ -342,6 +342,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 				bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
 				
 				if (CanAttackNow){
+					CharacterTargetChanged.Broadcast();
 					PlayerAttack(Character->ChosenEnemy, Character);
 				}
 				else
@@ -363,6 +364,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 
 							if (CanAttackNow)
 							{
+								CharacterTargetChanged.Broadcast();
 								PlayerAttack(Character->ChosenEnemy, Character);
 								break;
 							}
@@ -390,6 +392,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 
 						if (CanAttackNow)
 						{
+							CharacterTargetChanged.Broadcast();
 							PlayerAttack(Character->ChosenEnemy, Character);
 							break;
 						}
