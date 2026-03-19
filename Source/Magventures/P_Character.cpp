@@ -61,3 +61,8 @@ void AP_Character::ChangeStamina(float NewStamina)
 	}
 }
 
+bool AP_Character::CheckCanShoot() {
+	if (HaveRangedWeapon)
+		return true;
+	return false;
+}

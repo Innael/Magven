@@ -37,8 +37,20 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool AlreadyMove = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	bool HaveRangedWeapon = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot")
+	bool CanShoot = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentRangeAttack = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentRangeDamage = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentDamage = 7;
@@ -96,5 +108,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void ChangeStamina(float NewStamina);
+
+	UFUNCTION(BlueprintCallable)
+	bool CheckCanShoot();
 
 };

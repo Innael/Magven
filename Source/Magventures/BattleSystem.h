@@ -24,6 +24,7 @@ enum class EFormationSide : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCharacterChangeTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerShootSignature, int32, ActionCode, AActor*, TargetEnemy);
 
 UCLASS(Blueprintable)
 class MAGVENTURES_API UBattleSystem : public UObject
@@ -32,7 +33,7 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	
 	public:
 	// Конструктор
-	UBattleSystem();
+	UBattleSystem();	
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FCharacterChangeTarget CharacterTargetChanged;
@@ -58,6 +59,10 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	// Переменные для хранения состояния боя
 	bool BattleGoing = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool TurnNowOn = false;
+
+
 	bool FormationCentre = false;
 
 	bool FormationFront = false;
@@ -67,6 +72,7 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	bool FormationRight = false;
 
 	bool FormationRear = false;
+	
 
 	UFUNCTION(BlueprintCallable, Category = "Combat | Formation")
 	void SavePlayerDirection(FRotator NewRotation);
@@ -146,8 +152,17 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void RangedCombat(ACHEnemyCharacter* Enemy);
 
+	UFUNCTION(BlueprintCallable)
 	bool CheckPlayerTarget(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
 	void PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Character);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerShotEnd(AP_Character* Character, int32 ShotResult);
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerShootSignature OnPlayerShoot;
+
+	int32 PlayerShotCalculate(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
 };
