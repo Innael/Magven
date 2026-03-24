@@ -96,9 +96,12 @@ void UBattleSystem::EndBattle()
 {
 	if (BattleGoing)
 	{
+		FoundEnemies.Empty();
+		Fighters.Empty();
+		CharactersPawns.Empty();
 		BattleGoing = false;
+
 		// Логика завершения боя
-		UE_LOG(LogTemp, Warning, TEXT("Battle has ended!"));
 	}
 }
 

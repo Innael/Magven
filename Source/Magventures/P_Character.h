@@ -7,6 +7,10 @@
 #include "CHEnemyCharacter.h"
 #include "P_Character.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStaminaChanged, float, CurrentStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealthChanged, float, CurrentHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FManaChanged, float, CurrentMana);
+
 UCLASS()
 class MAGVENTURES_API AP_Character : public APawn
 {
@@ -15,6 +19,15 @@ class MAGVENTURES_API AP_Character : public APawn
 public:
 	// Sets default values for this pawn's properties
 	AP_Character();
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FStaminaChanged StaminaChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FHealthChanged HealthChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FManaChanged ManaChanged;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ACHEnemyCharacter* ChosenEnemy = nullptr;

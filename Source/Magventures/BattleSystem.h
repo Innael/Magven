@@ -87,6 +87,7 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	int32 GetRandomCombatValue(int32 MaxValue);
 
 private:
+	UPROPERTY()
 	TArray<ACHEnemyCharacter*> FoundEnemies;
 	
 

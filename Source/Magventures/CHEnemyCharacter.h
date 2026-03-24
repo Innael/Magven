@@ -11,6 +11,7 @@ class AP_Character;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStatusChangedSignature);
 
+
 UCLASS()
 
 class MAGVENTURES_API ACHEnemyCharacter : public ACharacter
@@ -31,7 +32,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
-	FOnStatusChangedSignature OnStatusChanged;
+	FOnStatusChangedSignature OnStatusChanged;	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	UBehaviorTree* BehaviorTreeAsset;

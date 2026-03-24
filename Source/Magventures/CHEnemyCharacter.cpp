@@ -45,6 +45,7 @@ void ACHEnemyCharacter::ChangeStamina(float NewStamina) {
 		Unconscious = false;
 		OnStatusChanged.Broadcast();
 	}
+
 }
 
 void ACHEnemyCharacter::CheckStatus()
