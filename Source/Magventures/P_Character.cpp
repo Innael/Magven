@@ -42,7 +42,7 @@ void AP_Character::ChangeHealth(float NewHealth){
 	{
 		Health = MaxHealth;
 	}
-	HealthChanged.Broadcast(Health);
+	HealthChangedToUI.Broadcast(Health);
 }
 
 void AP_Character::ChangeStamina(float NewStamina)
@@ -60,7 +60,7 @@ void AP_Character::ChangeStamina(float NewStamina)
 	{
 		Unconscious = false;
 	}
-	StaminaChanged.Broadcast(CurrentStamina);
+	StaminaChangedToUI.Broadcast(CurrentStamina);
 
 }
 

@@ -24,10 +24,19 @@ public:
 	FStaminaChanged StaminaChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FStaminaChanged StaminaChangedToUI;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHealthChanged HealthChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FHealthChanged HealthChangedToUI;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FManaChanged ManaChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FManaChanged ManaChangedToUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ACHEnemyCharacter* ChosenEnemy = nullptr;
@@ -97,6 +106,12 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite)
 	float CurrentStamina = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mana")
+	float MaxMana = 50;
+
+	UPROPERTY(BlueprintReadWrite)
+	float CurrentMana = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initiative")
 	int32 Initiative = 5;
