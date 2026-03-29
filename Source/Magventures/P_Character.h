@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStaminaChanged, float, CurrentStami
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealthChanged, float, CurrentHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FManaChanged, float, CurrentMana);
 
+
 UCLASS()
 class MAGVENTURES_API AP_Character : public APawn
 {
