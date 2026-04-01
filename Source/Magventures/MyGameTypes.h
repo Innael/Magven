@@ -25,7 +25,8 @@ enum class EItemCategory : uint8
 {
 	Weapon UMETA(DisplayName = "Weapon"),
 	Armor UMETA(DisplayName = "Armor"),
-	Consumable UMETA(DisplayName = "Consumable"), // Зелья, свитки
+	Potion UMETA(DisplayName = "Potion"),
+	Consumable UMETA(DisplayName = "Consumable"), // Cвитки и т.п.
 	Quest UMETA(DisplayName = "Quest Item"),
 	Misc UMETA(DisplayName = "Miscellaneous")
 };

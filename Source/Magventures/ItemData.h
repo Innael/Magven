@@ -62,6 +62,24 @@ public:
 	int32 Defense;
 };
 
+UCLASS(BlueprintType)
+class MAGVENTURES_API UPotionData : public UItemData
+{
+	GENERATED_BODY()
+
+public:
+	UPotionData() { Category = EItemCategory::Potion; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
+	float HealthRestore = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stamina")
+	float StaminaRestore = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mana")
+	float ManaRestore = 0.0f;
+};
+
 USTRUCT(BlueprintType)
 struct FItemTableRow : public FTableRowBase
 {

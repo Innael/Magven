@@ -1146,6 +1146,8 @@ int32 UBattleSystem::PlayerShotCalculate(ACHEnemyCharacter* Enemy, AP_Character*
 	Dice = GetRandomCombatValue(10);
 	int32 ED = Character->ChosenEnemy->CurrentDefence * Dice;
 
+	Character->ChangeStamina(-AttackStaminaCost + 2);
+
 	if (PA <= ED)
 	{
 		if (PA > (ED / 2))
