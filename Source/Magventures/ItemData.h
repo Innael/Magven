@@ -7,6 +7,21 @@
 #include "Engine/DataAsset.h"
 #include "ItemData.generated.h"
 
+USTRUCT(BlueprintType) // Делаем структуру доступной в Blueprints
+struct FInventorySlotStruct
+{
+	GENERATED_BODY() // Та самая "магия" Unreal
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UItemData* ItemData = nullptr; // Ссылка на сам предмет
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 StackCount = 0; // Количество
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsLocked = false; // То самое поле "заморозки" предмета
+};
+
 
 UCLASS(BlueprintType)
 class MAGVENTURES_API UItemData : public UPrimaryDataAsset
