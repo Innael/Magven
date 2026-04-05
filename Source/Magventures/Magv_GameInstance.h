@@ -18,6 +18,9 @@ class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 	public:
+
+		virtual void Init() override; 
+
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Events")
 	FOnTargetChanged OnTargetChanged;
 
@@ -25,9 +28,15 @@ class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory")
 	TArray<FInventorySlotStruct> SharedInventoryArray;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Inventory")
+	TArray<FCharacterInventoryPacket> PartyInventories; // Тут будет 8 элементов
+
 	// Геттер: Получить данные ячейки по индексу
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FInventorySlotStruct GetSharedItemAtIndex(int32 Index);
+
+	UFUNCTION(BlueprintCallable)
+	FInventorySlotStruct GetItemFromAnywhere(int32 OwnerIdx, int32 SlotIdx);
 
 	// Сеттер: Записать данные в ячейку
 	UFUNCTION(BlueprintCallable, Category = "Inventory")

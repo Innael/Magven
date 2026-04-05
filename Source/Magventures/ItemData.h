@@ -103,3 +103,13 @@ struct FItemTableRow : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UItemData* ItemDataAsset; // —сылка на наш созданный ассет предмета
 };
+
+USTRUCT(BlueprintType)
+struct FCharacterInventoryPacket
+{
+	GENERATED_BODY()
+
+	// ‘иксированный массив на 8 слотов дл€ одного геро€
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FInventorySlotStruct> InventorySlots;
+};

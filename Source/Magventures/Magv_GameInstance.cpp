@@ -3,6 +3,20 @@
 
 #include "Magv_GameInstance.h"
 
+void UMagv_GameInstance::Init()
+{
+	Super::Init();
+
+	// 1. Создаем 8 "карманов" для персонажей
+	PartyInventories.SetNum(8);
+
+	// 2. В каждом кармане создаем, например, по 12 слотов
+	for (int32 i = 0; i < PartyInventories.Num(); i++)
+	{
+		PartyInventories[i].InventorySlots.SetNum(8);
+	}
+}
+
 FInventorySlotStruct UMagv_GameInstance::GetSharedItemAtIndex(int32 Index)
 {
 	// Проверка, чтобы игра не вылетела, если мы спросим индекс, которого нет
@@ -50,3 +64,19 @@ void UMagv_GameInstance::SortSharedInventory()
 		});
 }
 
+UFUNCTION(BlueprintCallable)
+FInventorySlotStruct UMagv_GameInstance::GetItemFromAnywhere(int32 OwnerIdx, int32 SlotIdx)
+{
+	OwnerIdx--;
+	if (OwnerIdx == 8)
+		return GetSharedItemAtIndex(SlotIdx); // Общий склад
+
+	if (PartyInventories.IsValidIndex(OwnerIdx))
+	{
+		if (PartyInventories[OwnerIdx].InventorySlots.IsValidIndex(SlotIdx))
+		{
+			return PartyInventories[OwnerIdx].InventorySlots[SlotIdx];
+		}
+	}
+	return FInventorySlotStruct();
+}
