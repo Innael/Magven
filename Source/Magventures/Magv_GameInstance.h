@@ -43,6 +43,9 @@ class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
 	void SetSharedItemAtIndex(int32 Index, FInventorySlotStruct NewData);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetPersonalItemAtIndex(int32 CharIndx, int32 Index, FInventorySlotStruct NewData);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SortSharedInventory();
 
 };

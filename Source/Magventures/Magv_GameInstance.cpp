@@ -10,7 +10,7 @@ void UMagv_GameInstance::Init()
 	// 1. —оздаем 8 "карманов" дл€ персонажей
 	PartyInventories.SetNum(8);
 
-	// 2. ¬ каждом кармане создаем, например, по 12 слотов
+	// 2. ¬ каждом кармане создаем, 8 слотов
 	for (int32 i = 0; i < PartyInventories.Num(); i++)
 	{
 		PartyInventories[i].InventorySlots.SetNum(8);
@@ -64,7 +64,6 @@ void UMagv_GameInstance::SortSharedInventory()
 		});
 }
 
-UFUNCTION(BlueprintCallable)
 FInventorySlotStruct UMagv_GameInstance::GetItemFromAnywhere(int32 OwnerIdx, int32 SlotIdx)
 {
 	OwnerIdx--;
@@ -79,4 +78,16 @@ FInventorySlotStruct UMagv_GameInstance::GetItemFromAnywhere(int32 OwnerIdx, int
 		}
 	}
 	return FInventorySlotStruct();
+}
+
+void UMagv_GameInstance::SetPersonalItemAtIndex(int32 CharIndx, int32 Index, FInventorySlotStruct NewData)
+{
+	CharIndx--;
+	if (PartyInventories.IsValidIndex(CharIndx))
+	{
+		if (PartyInventories[CharIndx].InventorySlots.IsValidIndex(Index))
+		{
+			PartyInventories[CharIndx].InventorySlots[Index] = NewData;
+		}
+	}	
 }

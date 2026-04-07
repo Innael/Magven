@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "ItemData.h"
 #include "CHEnemyCharacter.h"
 #include "P_Character.generated.h"
 
@@ -41,6 +42,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ACHEnemyCharacter* ChosenEnemy = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UWeaponData* MeleeWeapon = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UWeaponData* RangedWeapon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Name")
 	FString Name;
