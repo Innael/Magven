@@ -19,6 +19,24 @@ enum class EWeaponType : uint8
 	Bow UMETA(DisplayName = "Bow")
 };
 
+UENUM(BlueprintType)
+enum class EArmorType : uint8
+{
+	NotArmor UMETA(DisplayName = "NotArmor"),
+	Mail UMETA(DisplayName = "Mail"),
+	Helm UMETA(DisplayName = "Helm"),
+	Gauntlets UMETA(DisplayName = "Gauntlets"),
+	Boots UMETA(DisplayName = "Boots"),
+	Shield UMETA(DisplayName = "Shield"),
+};
+
+UENUM(BlueprintType)
+enum class EAmmunitionType : uint8
+{
+	NotAmmunition UMETA(DisplayName = "NotAmmunition"),
+	Arrow UMETA(DisplayName = "Arrow"),
+	Bolt UMETA(DisplayName = "Bolt"),
+};
 
 UENUM(BlueprintType)
 enum class EItemCategory : uint8
@@ -28,6 +46,7 @@ enum class EItemCategory : uint8
 	Armor UMETA(DisplayName = "Armor"),
 	Potion UMETA(DisplayName = "Potion"),
 	Consumable UMETA(DisplayName = "Consumable"), // Cвитки и т.п.
+	Ammunition UMETA(DisplayName = "Ammunition"),
 	Quest UMETA(DisplayName = "Quest Item"),
 	Misc UMETA(DisplayName = "Miscellaneous")
 };

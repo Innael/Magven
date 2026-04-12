@@ -66,6 +66,27 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool RangeType = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slots")
+	bool TwoHanded = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Requirements")
+	int32 RequiredForce = 0;
+};
+
+UCLASS(BlueprintType)
+class MAGVENTURES_API UAmmunition : public UItemData
+{
+	GENERATED_BODY()
+
+public:
+	UAmmunition() { Category = EItemCategory::Ammunition; } // Значение по умолчанию
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	int32 Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	EAmmunitionType AmmunitionType;
 };
 
 UCLASS(BlueprintType)
@@ -78,6 +99,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Protection")
 	int32 Defense;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	EArmorType ArmorType;
 };
 
 UCLASS(BlueprintType)

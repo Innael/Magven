@@ -9,12 +9,16 @@ AP_Character::AP_Character()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	CharAttribute = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComp"));
+
 }
 
 // Called when the game starts or when spawned
 void AP_Character::BeginPlay()
 {
 	Super::BeginPlay();
+
+
 	
 }
 
@@ -68,4 +72,61 @@ bool AP_Character::CheckCanShoot() {
 	if (HaveRangedWeapon)
 		return true;
 	return false;
+}
+
+void AP_Character::RecalculateDamage() {
+
+	float DamageMultiplier = 1.0f;
+
+	if (CharAttribute->Strength < 50)
+	{
+		DamageMultiplier = 1.0f - ((50 - CharAttribute->Strength) / 100.f);
+	}
+	else if (CharAttribute->Strength > 50)
+	{
+		DamageMultiplier = 1.0f + (((CharAttribute->Strength - 50) * 2) / 100.f);
+	}
+
+	if (MeleeWeapon)
+	{
+		CurrentDamage = FMath::Max(0.f, MeleeWeapon->Damage * DamageMultiplier);
+	}
+	else
+	{
+		CurrentDamage = FMath::Max(0.f, 2 * DamageMultiplier);
+		
+	}
+	
+	if (RangedWeapon && Quiver)
+	{
+		HaveRangedWeapon = true;
+		CurrentRangeDamage = RangedWeapon->Damage + Quiver->Damage;
+	}
+	else
+	{
+		HaveRangedWeapon = false;
+		CurrentRangeDamage = 0;
+	} 
+		
+
+}
+
+void AP_Character::RecalculateDefence() {
+
+	int32 DefenseModifier = BaseDefence;
+
+	if (Helm)
+		DefenseModifier += Helm->Defense;
+
+	if (Mail)
+		DefenseModifier += Mail->Defense;
+
+	if (Gauntlets)
+		DefenseModifier += Gauntlets->Defense;
+
+	if (Boots)
+		DefenseModifier += Boots->Defense;
+
+	if (Shield)
+		DefenseModifier += Shield->Defense;
 }

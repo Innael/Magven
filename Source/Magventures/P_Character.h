@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "AttributeComponent.h"
 #include "ItemData.h"
 #include "CHEnemyCharacter.h"
 #include "P_Character.generated.h"
@@ -41,13 +42,37 @@ public:
 	FManaChanged ManaChangedToUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAttributeComponent* CharAttribute;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ACHEnemyCharacter* ChosenEnemy = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UWeaponData* MeleeWeapon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UWeaponData* SecondMeleeWeapon = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UWeaponData* RangedWeapon = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UAmmunition* Quiver = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+	UArmorData* Mail = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+	UArmorData* Helm = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+	UArmorData* Gauntlets = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+	UArmorData* Boots = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+	UArmorData* Shield = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Name")
 	FString Name;
@@ -72,6 +97,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot")
 	bool CanShoot = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
+	int32 BaseDefence = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack = 10;
@@ -147,5 +175,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool CheckCanShoot();
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void RecalculateDamage();
+
+	UFUNCTION(BlueprintCallable, Category = "Defence")
+	void RecalculateDefence();
 
 };
