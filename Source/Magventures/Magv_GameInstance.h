@@ -11,6 +11,7 @@
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetChanged, AActor*, SelectedTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryChanged);
 
 UCLASS()
 class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
@@ -23,6 +24,9 @@ class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Events")
 	FOnTargetChanged OnTargetChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnInventoryChanged OnInventoryChanged;
 
 	// Наш массив "Общего склада"
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory")
@@ -47,5 +51,8 @@ class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SortSharedInventory();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 FindFirstAvailableIndex();
 
 };

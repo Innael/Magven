@@ -40,6 +40,11 @@ void UMagv_GameInstance::SetSharedItemAtIndex(int32 Index, FInventorySlotStruct 
 		SharedInventoryArray.SetNum(NewSize);
 		SharedInventoryArray[Index] = NewData;
 	}
+
+	if (OnInventoryChanged.IsBound())
+	{
+		OnInventoryChanged.Broadcast();
+	}
 }
 
 void UMagv_GameInstance::SortSharedInventory()
@@ -90,4 +95,23 @@ void UMagv_GameInstance::SetPersonalItemAtIndex(int32 CharIndx, int32 Index, FIn
 			PartyInventories[CharIndx].InventorySlots[Index] = NewData;
 		}
 	}	
+}
+
+int32 UMagv_GameInstance::FindFirstAvailableIndex()
+{
+
+	for (int32 i = 0; i < SharedInventoryArray.Num(); ++i)
+	{
+		if (SharedInventoryArray[i].ItemData == nullptr)
+		{
+			return i;
+		}
+	}
+
+	// Если всё забито — возвращаем индекс в конце массива (расширение)
+	int32 NewIndex = SharedInventoryArray.Num();
+	// Добавляем сразу 10 ячейек, чтобы не вызывать SetNum каждый раз
+
+	SharedInventoryArray.SetNum(NewIndex + 10);
+	return NewIndex;
 }

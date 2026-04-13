@@ -67,6 +67,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool RangeType = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool LongWeapon = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slots")
 	bool TwoHanded = false;
 
@@ -87,6 +90,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	EAmmunitionType AmmunitionType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	EWeaponType AmmunitionFor;
 };
 
 UCLASS(BlueprintType)
