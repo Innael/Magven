@@ -77,14 +77,17 @@ bool AP_Character::CheckCanShoot() {
 void AP_Character::RecalculateDamage() {
 
 	float DamageMultiplier = 1.0f;
+	float SecondDamageMultiplier = 1.0f;
 
 	if (CharAttribute->Strength < 50)
 	{
 		DamageMultiplier = 1.0f - ((50 - CharAttribute->Strength) / 100.f);
+		SecondDamageMultiplier = DamageMultiplier;
 	}
 	else if (CharAttribute->Strength > 50)
 	{
 		DamageMultiplier = 1.0f + (((CharAttribute->Strength - 50) * 2) / 100.f);
+		SecondDamageMultiplier = 1.0f + ((CharAttribute->Strength - 50) / 100.f);
 	}
 
 	if (MeleeWeapon)
@@ -95,6 +98,15 @@ void AP_Character::RecalculateDamage() {
 	{
 		CurrentDamage = FMath::Max(0.f, 2 * DamageMultiplier);
 		
+	}
+
+	if (SecondMeleeWeapon)
+	{
+		CurrentSWDamage = FMath::Max(0.f, SecondMeleeWeapon->Damage * SecondDamageMultiplier);
+	}
+	else
+	{
+		CurrentSWDamage = 0;
 	}
 	
 	if (RangedWeapon && Quiver)
@@ -108,6 +120,10 @@ void AP_Character::RecalculateDamage() {
 		CurrentRangeDamage = 0;
 	} 
 		
+	if (EquipStatsChanged.IsBound())
+	{
+		EquipStatsChanged.Broadcast();
+	}
 
 }
 
@@ -129,4 +145,11 @@ void AP_Character::RecalculateDefence() {
 
 	if (Shield)
 		DefenseModifier += Shield->Defense;
+
+	CurrentDefence = DefenseModifier;
+
+	if (EquipStatsChanged.IsBound())
+	{
+		EquipStatsChanged.Broadcast();
+	}
 }

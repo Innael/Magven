@@ -29,26 +29,26 @@ public:
 	TMap<ECharacterSkill, int32> Skills;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	int32 Strength;
+	int32 Strength = 50;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	int32 Intelligence;
+	int32 Intelligence = 50;
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	int32 Will;
+	int32 Will = 50;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	int32 Vitality;
+	int32 Vitality = 50;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	int32 Dexterity;
+	int32 Dexterity = 50;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	int32 Agility;
+	int32 Agility = 50;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	int32 Perception;
+	int32 Perception = 50;
 
 
 

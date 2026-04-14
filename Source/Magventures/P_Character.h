@@ -12,6 +12,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStaminaChanged, float, CurrentStamina);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealthChanged, float, CurrentHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FManaChanged, float, CurrentMana);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEquipStatsChanged);
 
 
 UCLASS()
@@ -40,6 +41,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FManaChanged ManaChangedToUI;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FEquipStatsChanged EquipStatsChanged;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAttributeComponent* CharAttribute;
@@ -112,6 +116,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentDamage = 7;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentSWDamage = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
 	float CurrentDefence = 5;
