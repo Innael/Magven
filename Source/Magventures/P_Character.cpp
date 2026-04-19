@@ -69,7 +69,7 @@ void AP_Character::ChangeStamina(float NewStamina)
 }
 
 bool AP_Character::CheckCanShoot() {
-	if (HaveRangedWeapon)
+	if (HaveRangedWeapon && Quiver && AmmunitionCount > 0)
 		return true;
 	return false;
 }
@@ -92,32 +92,50 @@ void AP_Character::RecalculateDamage() {
 
 	if (MeleeWeapon)
 	{
-		CurrentDamage = FMath::Max(0.f, MeleeWeapon->Damage * DamageMultiplier);
+		CurrentMinDamage = FMath::Max(0.f, MeleeWeapon->MinDamage * DamageMultiplier);
+		CurrentMaxDamage = FMath::Max(0.f, MeleeWeapon->MaxDamage * DamageMultiplier);
+		if (MeleeWeapon->LongWeapon)
+			PlayerMeleeRangeType = 2;
+		else
+			PlayerMeleeRangeType = 1;
 	}
 	else
 	{
-		CurrentDamage = FMath::Max(0.f, 2 * DamageMultiplier);
-		
+		CurrentMinDamage = FMath::Max(0.f, 1 * DamageMultiplier);
+		CurrentMaxDamage = FMath::Max(0.f, 2 * DamageMultiplier);
+		PlayerMeleeRangeType = 1;
 	}
 
 	if (SecondMeleeWeapon)
 	{
-		CurrentSWDamage = FMath::Max(0.f, SecondMeleeWeapon->Damage * SecondDamageMultiplier);
+		CurrentMinSWDamage = FMath::Max(0.f, SecondMeleeWeapon->MinDamage * SecondDamageMultiplier);
+		CurrentMaxSWDamage = FMath::Max(0.f, SecondMeleeWeapon->MaxDamage * SecondDamageMultiplier);
 	}
 	else
 	{
-		CurrentSWDamage = 0;
+		CurrentMinSWDamage = 0;
+		CurrentMaxSWDamage = 0;
 	}
 	
 	if (RangedWeapon && Quiver)
 	{
 		HaveRangedWeapon = true;
-		CurrentRangeDamage = RangedWeapon->Damage + Quiver->Damage;
+		CanShoot = true;
+		CurrentMinRangeDamage = RangedWeapon->MinDamage + Quiver->Damage;
+		CurrentMaxRangeDamage = RangedWeapon->MaxDamage + Quiver->Damage;
 	}
 	else
 	{
-		HaveRangedWeapon = false;
-		CurrentRangeDamage = 0;
+		if (!RangedWeapon)
+		{
+			HaveRangedWeapon = false;			
+		}
+			
+		CurrentMinRangeDamage = 0;
+		CurrentMaxRangeDamage = 0;
+		if (!Quiver)
+			AmmunitionCount = 0;
+		CanShoot = false;
 	} 
 		
 	if (EquipStatsChanged.IsBound())
@@ -151,5 +169,61 @@ void AP_Character::RecalculateDefence() {
 	if (EquipStatsChanged.IsBound())
 	{
 		EquipStatsChanged.Broadcast();
+	}
+}
+
+
+void AP_Character::RecalculateWeight(float PersonalInventoryWeight, float ShrdWeight)
+{
+	InventoryWeight = PersonalInventoryWeight;
+	SharedWeight = ShrdWeight;
+
+	EquipmentWeight = 0;
+
+	if (MeleeWeapon)
+		EquipmentWeight += MeleeWeapon->Weight;
+
+	if (SecondMeleeWeapon)
+		EquipmentWeight += SecondMeleeWeapon->Weight;
+
+	if (RangedWeapon)
+		EquipmentWeight += RangedWeapon->Weight;
+
+	if (Quiver)
+		EquipmentWeight += Quiver->Weight * AmmunitionCount;
+
+	if (Mail)
+		EquipmentWeight += Mail->Weight;
+
+	if (Helm)
+		EquipmentWeight += Helm->Weight;
+
+	if (Gauntlets)
+		EquipmentWeight += Gauntlets->Weight;
+
+	if (Boots)
+		EquipmentWeight += Boots->Weight;
+
+	if (Shield)
+		EquipmentWeight += Shield->Weight;
+
+	TotalWeight = EquipmentWeight + InventoryWeight + SharedWeight;
+}
+
+float AP_Character::GetMaxCarryingCapacity() {
+	return CharAttribute->Strength * CarryingModifier;
+}
+
+
+void AP_Character::SubtractAmmunition() {
+	if (!Quiver || AmmunitionCount < 1) return;
+
+	AmmunitionCount--;
+
+	EquipmentWeight -= Quiver->Weight;
+	TotalWeight -= Quiver->Weight;
+	
+	if (AmmunitionDecreased.IsBound()){
+		AmmunitionDecreased.Broadcast();
 	}
 }

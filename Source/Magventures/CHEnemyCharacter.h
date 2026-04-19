@@ -46,6 +46,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Class")
 	bool ArcherClass = false;
 
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
+	bool HaveLongWeapon = false;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Health")
 	bool Live = true;
 
@@ -93,11 +97,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentRangeAttack = 0;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	float CurrentDamage = 5;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Range Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float DamageModifier = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Range Damage")
 	float CurrentRangeDamage = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Range Damage")
+	float RangeDamageModifier = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float DamageVariation = 0.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
 	float CurrentDefence = 3;
@@ -125,5 +138,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool CanSeeTarget(AActor* Target);
+
+	float CalculateRandomizedDamage(float BaseDamage);
 
 };

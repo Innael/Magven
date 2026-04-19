@@ -314,9 +314,10 @@ void UBattleSystem::EnemyAttack(ACHEnemyCharacter* Enemy, TArray<UCombatCharacte
 	}
 	else
 	{
-		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeHealth(-Enemy->CurrentDamage);
+		float Damage = Enemy->CalculateRandomizedDamage(Enemy->CurrentDamage) * Enemy->DamageModifier;
+		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeHealth(-Damage);
 		CharactersAtEnemy[TargetLock]->PlayerPawn->ChangeStamina(-ReciveAttackStaminaCost);
-		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(Enemy->CurrentDamage) + AttackResDammage);
+		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(Damage) + AttackResDammage);
 	}
 }
 
@@ -732,6 +733,27 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
 				}
+
+				if (Enemy->HaveLongWeapon)
+				{
+					if (elem->PlayerPawn->Formation == 3 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 1 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 4 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+				}
 			}
 		}
 		else
@@ -754,6 +776,14 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 				{
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
+				}
+
+				if (Enemy->HaveLongWeapon){
+					if (elem->PlayerPawn->Formation == 5 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
 				}
 			}
 		}
@@ -786,6 +816,27 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
 				}
+
+				if (Enemy->HaveLongWeapon)
+				{
+					if (elem->PlayerPawn->Formation == 1 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 2 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 5 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+				}
 			}
 		}
 		else
@@ -808,6 +859,15 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 				{
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
+				}
+
+				if (Enemy->HaveLongWeapon){
+
+					if (elem->PlayerPawn->Formation == 4 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
 				}
 			}
 		}
@@ -840,6 +900,27 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
 				}
+
+				if (Enemy->HaveLongWeapon){
+
+					if (elem->PlayerPawn->Formation == 1 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 2 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 5 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+				}
 			}
 		}
 		else
@@ -863,6 +944,16 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
 				}
+
+				if (Enemy->HaveLongWeapon){
+
+					if (elem->PlayerPawn->Formation == 3 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+				}
+
 			}
 		}
 		if (CharactersPawns.IsEmpty())
@@ -894,6 +985,28 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
 				}
+
+				if (Enemy->HaveLongWeapon)
+				{
+					if (elem->PlayerPawn->Formation == 1 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 3 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+
+					if (elem->PlayerPawn->Formation == 4 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
+				}
+
 			}
 		}
 		else
@@ -916,6 +1029,15 @@ void UBattleSystem::CloseCombat(ACHEnemyCharacter* Enemy)
 				{
 					CharactersAtEnemy.Add(elem);
 					CountCharatersAtEnemy++;
+				}
+
+				if (Enemy->HaveLongWeapon)
+				{
+					if (elem->PlayerPawn->Formation == 2 && elem->PlayerPawn->Live)
+					{
+						CharactersAtEnemy.Add(elem);
+						CountCharatersAtEnemy++;
+					}
 				}
 			}
 		}
@@ -995,9 +1117,10 @@ void UBattleSystem::EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult)
 	}
 	else
 	{
-		Enemy->CurrentTarget->ChangeHealth(-Enemy->CurrentRangeDamage);
+		float RangeDamage = Enemy->CalculateRandomizedDamage(Enemy->CurrentRangeDamage) * Enemy->RangeDamageModifier;
+		Enemy->CurrentTarget->ChangeHealth(-RangeDamage);
 		Enemy->CurrentTarget->ChangeStamina(-ReciveAttackStaminaCost);
-		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(Enemy->CurrentRangeDamage) + AttackResDammage);
+		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(RangeDamage) + AttackResDammage);
 	}
 	NextFighterTurn();
 }
@@ -1133,9 +1256,10 @@ void UBattleSystem::PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Charact
 	}
 	else
 	{
-		Enemy->ChangeHealth(-Character->CurrentDamage);
+		int32 CurrentDamage = FMath::RandRange(Character->CurrentMinDamage, Character->CurrentMaxDamage);
+		Enemy->ChangeHealth(-CurrentDamage);
 		Enemy->ChangeStamina(-ReciveAttackStaminaCost);
-		HUD->BtLog(WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(Character->CurrentDamage) + AttackResDammage);
+		HUD->BtLog(WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(CurrentDamage) + AttackResDammage);
 	}
 }
 
@@ -1184,10 +1308,17 @@ void UBattleSystem::PlayerShotEnd(AP_Character* Character, int32 ShotResult) {
 	}
 	else
 	{
-		Character->ChosenEnemy->ChangeHealth(-Character->CurrentRangeDamage);
+		int32 CurrentRangeDamage = FMath ::RandRange(Character->CurrentMinRangeDamage, Character->CurrentMaxRangeDamage);
+		Character->ChosenEnemy->ChangeHealth(-CurrentRangeDamage);
 		Character->ChosenEnemy->ChangeStamina(-ReciveAttackStaminaCost);
 		HUD->BtLog(
-			WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(Character->CurrentRangeDamage) + AttackResDammage);
+			WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(CurrentRangeDamage) + AttackResDammage);
+	}
+
+	Character->SubtractAmmunition();
+	if (Character->AmmunitionCount < 1){
+		FString QuiverEmptyStr = TEXT(" обнаруживает, что боекомплект исчерпан.");
+		HUD->BtLog(WrappedString2 + QuiverEmptyStr);
 	}
 
 	NextFighterTurn();

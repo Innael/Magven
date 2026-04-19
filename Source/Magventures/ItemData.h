@@ -59,7 +59,10 @@ public:
 	UWeaponData() { Category = EItemCategory::Weapon; } // Значение по умолчанию
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	int32 Damage;
+	int32 MinDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	int32 MaxDamage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	EWeaponType WeaponType;

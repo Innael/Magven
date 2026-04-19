@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ItemData.h"
+#include "P_Character.h"
 #include "Engine/GameInstance.h"
 #include "Magv_GameInstance.generated.h"
 
@@ -27,6 +28,9 @@ class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryChanged OnInventoryChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnInventoryChanged OnWeightChanged;
 
 	// Наш массив "Общего склада"
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory")
@@ -54,5 +58,8 @@ class MAGVENTURES_API UMagv_GameInstance : public UGameInstance
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 FindFirstAvailableIndex();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void RecalculateInventory(const TArray<AP_Character*>& InPartyMembers);
 
 };

@@ -92,8 +92,8 @@ void UMagv_GameInstance::SetPersonalItemAtIndex(int32 CharIndx, int32 Index, FIn
 	{
 		if (PartyInventories[CharIndx].InventorySlots.IsValidIndex(Index))
 		{
-			PartyInventories[CharIndx].InventorySlots[Index] = NewData;
-		}
+			PartyInventories[CharIndx].InventorySlots[Index] = NewData;			
+		}		
 	}	
 }
 
@@ -114,4 +114,60 @@ int32 UMagv_GameInstance::FindFirstAvailableIndex()
 
 	SharedInventoryArray.SetNum(NewIndex + 10);
 	return NewIndex;
+}
+
+
+void UMagv_GameInstance::RecalculateInventory(const TArray<AP_Character*>& InPartyMembers) {
+
+	float TotalPartyCapacity = 0.0f;
+	TArray<AP_Character*> LivingMembers;
+
+	for (auto Member : InPartyMembers)
+	{
+		if (Member && Member->Char_Exist && Member->Live)
+		{
+			TotalPartyCapacity += Member->GetMaxCarryingCapacity(); // Сила * Коэффициент
+			LivingMembers.Add(Member);
+		}
+	}
+
+	if (TotalPartyCapacity == 0.0f)
+		return;
+
+	float SharedWeight = 0;  // Сумма веса всех ItemData в SharedArray
+	
+	for (const auto& elem : SharedInventoryArray)
+	{
+		if(elem.ItemData){
+			int32 Count = FMath::Max(1, elem.StackCount);
+			SharedWeight += (elem.ItemData->Weight * Count);
+		}
+	}
+
+	for (auto Member : LivingMembers)
+	{
+		float CapacityRatio = Member->GetMaxCarryingCapacity() / TotalPartyCapacity;
+		float DistributedWeight = SharedWeight * CapacityRatio;
+
+		float PersonaInventoryWeight = 0;
+		int32 CharIndx = Member->Position - 1;
+
+			
+		for (const auto& elem : PartyInventories[CharIndx].InventorySlots)
+		{
+			if (elem.ItemData){
+				int32 Count = FMath::Max(1, elem.StackCount);
+				PersonaInventoryWeight += (elem.ItemData->Weight * Count);
+			}
+		} 
+
+		// Обновляем итоговый вес в компоненте атрибутов персонажа
+		Member->RecalculateWeight(PersonaInventoryWeight, DistributedWeight);
+	}
+
+	if (OnWeightChanged.IsBound())
+	{
+		OnWeightChanged.Broadcast();
+	}
+
 }

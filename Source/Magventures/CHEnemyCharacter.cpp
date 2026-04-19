@@ -85,3 +85,13 @@ bool ACHEnemyCharacter::CanSeeTarget(AActor* Target)
 
 	return false; // Между нами стена или другой объект
 }
+
+
+float ACHEnemyCharacter::CalculateRandomizedDamage(float BaseDamage)
+{	
+
+	// Генерируем множитель в диапазоне [0.8, 1.2]
+	float DamageMultiplier = FMath::FRandRange(1.0f - DamageVariation, 1.0f + DamageVariation);
+	
+	return BaseDamage * DamageMultiplier;
+}
