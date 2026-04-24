@@ -38,6 +38,12 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FCharacterChangeTarget CharacterTargetChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerShootSignature OnPlayerShoot;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerShootSignature OnPlayerThrow;
+
 	// Пример функции для начала боя
 	UFUNCTION(BlueprintCallable, Category = "Battle")
 	void StartBattle(TArray<AP_Character*> PC_Arr);
@@ -161,9 +167,11 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void PlayerShotEnd(AP_Character* Character, int32 ShotResult);
 
-	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
-	FOnPlayerShootSignature OnPlayerShoot;
+	UFUNCTION(BlueprintCallable)
+	void PlayerThrowEnd(AP_Character* Character, int32 ShotResult);
 
 	int32 PlayerShotCalculate(ACHEnemyCharacter* Enemy, AP_Character* Character);
+
+	int32 PlayerThrowCalculate(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
 };

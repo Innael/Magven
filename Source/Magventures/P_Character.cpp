@@ -74,6 +74,13 @@ bool AP_Character::CheckCanShoot() {
 	return false;
 }
 
+bool AP_Character::CheckCanThrow()
+{
+	if (ThrowingWeapon && ThrowingWeaponCount > 0)
+		return true;
+	return false;
+}
+
 void AP_Character::RecalculateDamage() {
 
 	float DamageMultiplier = 1.0f;
@@ -116,6 +123,19 @@ void AP_Character::RecalculateDamage() {
 		CurrentMinSWDamage = 0;
 		CurrentMaxSWDamage = 0;
 	}
+
+	if (ThrowingWeapon && ThrowingWeaponCount > 0)
+	{
+		CurrentMinThrowDamage = FMath::Max(0.f, ThrowingWeapon->MinDamage * DamageMultiplier);
+		CurrentMaxThrowDamage = FMath::Max(0.f, ThrowingWeapon->MaxDamage * DamageMultiplier);
+		CanThrow = true;
+	}else
+	{
+		CurrentMinThrowDamage = 0;
+		CurrentMaxThrowDamage = 0;
+		CanThrow = false;
+	} 
+
 	
 	if (RangedWeapon && Quiver)
 	{
@@ -207,6 +227,9 @@ void AP_Character::RecalculateWeight(float PersonalInventoryWeight, float ShrdWe
 	if (Shield)
 		EquipmentWeight += Shield->Weight;
 
+	if (ThrowingWeapon)
+		EquipmentWeight += ThrowingWeapon->Weight * ThrowingWeaponCount;
+
 	TotalWeight = EquipmentWeight + InventoryWeight + SharedWeight;
 }
 
@@ -225,5 +248,21 @@ void AP_Character::SubtractAmmunition() {
 	
 	if (AmmunitionDecreased.IsBound()){
 		AmmunitionDecreased.Broadcast();
+	}
+}
+
+void AP_Character::SubtractThrowingWeapon()
+{
+	if (!ThrowingWeapon || ThrowingWeaponCount < 1)
+		return;
+
+	ThrowingWeaponCount--;
+
+	EquipmentWeight -= ThrowingWeapon->Weight;
+	TotalWeight -= ThrowingWeapon->Weight;
+
+	if (ThrowingWeaponDecreased.IsBound())
+	{
+		ThrowingWeaponDecreased.Broadcast();
 	}
 }

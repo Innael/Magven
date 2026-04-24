@@ -14,10 +14,12 @@ enum class EWeaponType : uint8
 	Sword UMETA(DisplayName = "Sword"),
 	Axe UMETA(DisplayName = "Axe"),
 	Mace UMETA(DisplayName = "Mace"),
+	Spear UMETA(DisplayName = "Spear"),
 	Dagger UMETA(DisplayName = "Dagger"),
 	Staff UMETA(DisplayName = "Staff"),
 	Bow UMETA(DisplayName = "Bow"),
-	Crossbow UMETA(DisplayName = "Crossbow")
+	Crossbow UMETA(DisplayName = "Crossbow"),
+	Throwing UMETA(DisplayName = "Throwning")
 };
 
 UENUM(BlueprintType)

@@ -48,6 +48,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FEquipStatsChanged AmmunitionDecreased;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FEquipStatsChanged ThrowingWeaponDecreased;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAttributeComponent* CharAttribute;
 
@@ -65,6 +68,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UAmmunition* Quiver = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UWeaponData* ThrowingWeapon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
 	UArmorData* Mail = nullptr;
@@ -105,6 +111,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot")
 	bool CanShoot = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot")
+	bool CanThrow = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
 	int32 BaseDefence = 0;
 
@@ -114,14 +123,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammunition")
 	int32 AmmunitionCount = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammunition")
+	int32 ThrowingWeaponCount = 0;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentRangeAttack = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentThrowAttack = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentMinRangeDamage = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentMaxRangeDamage = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentMinThrowDamage = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentMaxThrowDamage = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentMinDamage = 2;
@@ -140,6 +161,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weight")
 	float CarryingModifier = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
+	float MaxStamina = 100;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Formation")
 	int32 Formation = 1; // ѕоложение персонажа в боевом построении отр€да.
@@ -160,10 +184,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth = 100.0f;
 
-	float Health = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
-	float MaxStamina = 100;
+	float Health = 100.0f;	
 
 	UPROPERTY(BlueprintReadWrite)
 	float CurrentStamina = 100;
@@ -213,6 +234,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool CheckCanShoot();
 
+	UFUNCTION(BlueprintCallable)
+	bool CheckCanThrow();
+
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void RecalculateDamage();
 
@@ -227,6 +251,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ammunition")
 	void SubtractAmmunition();
+
+	UFUNCTION(BlueprintCallable, Category = "Ammunition")
+	void SubtractThrowingWeapon();
 
 };
 

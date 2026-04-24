@@ -73,6 +73,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool LongWeapon = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool Spinning = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slots")
 	bool TwoHanded = false;
 
