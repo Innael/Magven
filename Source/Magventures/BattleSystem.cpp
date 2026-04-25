@@ -360,7 +360,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 						if (Character->CheckCanThrow())
 						{
 							Distance = FVector::Dist(elem->EnemyCharacter->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-							if (Distance <= 1000)
+							if (Distance <= ThrowingMaxDistance)
 							{
 								Character->ChosenEnemy = elem->EnemyCharacter;
 								break;
@@ -413,7 +413,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 								if (Character->CheckCanThrow())
 								{
 									Distance = FVector::Dist(Character->ChosenEnemy->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-									if (Distance <= 1000)
+									if (Distance <= ThrowingMaxDistance)
 									{
 										if (Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 										{
@@ -449,7 +449,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 						if (Character->CheckCanThrow()){
 							Distance = FVector::Dist(Character->ChosenEnemy->GetActorLocation(),
 								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-							if (Distance <= 1000){
+							if (Distance <= ThrowingMaxDistance)
+							{
 								HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 								OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
 								return;
@@ -477,7 +478,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 										{
 											Distance = FVector::Dist(Character->ChosenEnemy->GetActorLocation(),
 												GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-											if (Distance <= 1000)
+											if (Distance <= ThrowingMaxDistance)
 											{
 												HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 												OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
@@ -653,7 +654,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 			{	
 				if (Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 				{
-					if (Distance <= 1000)
+					if (Distance <= ThrowingMaxDistance)
 					{
 						CharacterTargetChanged.Broadcast();
 						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
@@ -680,7 +681,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 								{
 									Distance = FVector::Dist(elem->EnemyCharacter->GetActorLocation(),
 										GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-									if (Distance <= 1000)
+									if (Distance <= ThrowingMaxDistance)
 									{
 										CharacterTargetChanged.Broadcast();
 										HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
@@ -730,7 +731,7 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 			{
 				if (!CheckPlayerTarget(Character->ChosenEnemy, Character))
 				{
-					if (Distance <= 1000)
+					if (Distance <= ThrowingMaxDistance)
 					{
 						CharacterTargetChanged.Broadcast();
 						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);

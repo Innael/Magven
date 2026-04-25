@@ -78,7 +78,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	bool FormationRight = false;
 
 	bool FormationRear = false;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ThrowingMaxDistance = 1500;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat | Formation")
 	void SavePlayerDirection(FRotator NewRotation);
