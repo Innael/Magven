@@ -39,6 +39,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	FCharacterChangeTarget CharacterTargetChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FCharacterChangeTarget CharacterActionChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerShootSignature OnPlayerShoot;
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")

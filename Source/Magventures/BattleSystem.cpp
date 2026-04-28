@@ -341,37 +341,14 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 			for (const auto& elem : Fighters){
 				if (elem->WType == 'E'){
 					float Distance = FVector::Dist(elem->EnemyCharacter->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-					if (Distance <= 300)
+					if (Distance <= 300 && CheckPlayerTarget(elem->EnemyCharacter, Character))
 					{						
 						Character->ChosenEnemy = elem->EnemyCharacter;
 						break;
-					}
-					else 
-					{
-						if (Character->CheckCanShoot()){
-							if (elem->EnemyCharacter->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
-							{
-								Character->ChosenEnemy = elem->EnemyCharacter;
-								break;
-							}
-							
-						}
-
-						if (Character->CheckCanThrow())
-						{
-							Distance = FVector::Dist(elem->EnemyCharacter->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
-							if (Distance <= ThrowingMaxDistance)
-							{
-								Character->ChosenEnemy = elem->EnemyCharacter;
-								break;
-							}
-						}
-					} 
-
-						
+					}									
 				}
 			}
-		}
+		}		
 		
 		if (Character->ChosenEnemy){
 			float Distance = FVector::Dist(Character->ChosenEnemy->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
@@ -380,9 +357,12 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 				bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
 				
 				if (CanAttackNow){
+					CharacterActionChanged.Broadcast();
 					CharacterTargetChanged.Broadcast();
 					HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 					PlayerAttack(Character->ChosenEnemy, Character);
+					NextFighterTurn();
+					return;
 				}
 				else
 				{
@@ -402,11 +382,13 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 							CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
 
 							if (CanAttackNow)
-							{
+							{								
+								CharacterActionChanged.Broadcast();
 								CharacterTargetChanged.Broadcast();
 								HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 								PlayerAttack(Character->ChosenEnemy, Character);
-								break;
+								NextFighterTurn();
+								return;
 							}
 							else{
 
@@ -417,6 +399,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 									{
 										if (Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 										{
+											Character->PlayerActionTypeInd = 4;
+											CharacterActionChanged.Broadcast();
 											CharacterTargetChanged.Broadcast();
 											HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 											OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
@@ -427,7 +411,9 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 
 								if (Character->CheckCanShoot()){
 									if (Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
-									{										
+									{	
+										Character->PlayerActionTypeInd = 2;
+										CharacterActionChanged.Broadcast();
 										CharacterTargetChanged.Broadcast();
 										HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 										OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
@@ -451,6 +437,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 							if (Distance <= ThrowingMaxDistance)
 							{
+								Character->PlayerActionTypeInd = 4;
+								CharacterActionChanged.Broadcast();
 								HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 								OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
 								return;
@@ -459,6 +447,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 
 						if (Character->CheckCanShoot())
 						{
+							Character->PlayerActionTypeInd = 2;
+							CharacterActionChanged.Broadcast();
 							HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 							OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
 							return;
@@ -480,6 +470,9 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 												GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 											if (Distance <= ThrowingMaxDistance)
 											{
+												Character->PlayerActionTypeInd = 4;
+												CharacterActionChanged.Broadcast();
+												CharacterTargetChanged.Broadcast();
 												HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 												OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
 												return;
@@ -488,6 +481,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 										else if (Character->CheckCanShoot())
 										{
 											Character->ChosenEnemy = elem->EnemyCharacter;
+											Character->PlayerActionTypeInd = 2;
+											CharacterActionChanged.Broadcast();
 											CharacterTargetChanged.Broadcast();
 											HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 											OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
@@ -514,15 +509,24 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 								}
 								if (Character->ChosenEnemy)
 								{
-									bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+									float Dist = FVector::Dist(Character->ChosenEnemy->GetActorLocation(),
+										GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 
-									if (CanAttackNow)
-									{
-										CharacterTargetChanged.Broadcast();
-										HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
-										PlayerAttack(Character->ChosenEnemy, Character);
-										break;
+									if (Dist <= 300){
+
+										bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+
+										if (CanAttackNow)
+										{
+											CharacterActionChanged.Broadcast();
+											CharacterTargetChanged.Broadcast();
+											HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
+											PlayerAttack(Character->ChosenEnemy, Character);
+											NextFighterTurn();
+											return;
+										}
 									}
+									
 								}
 							}
 						}
@@ -545,15 +549,24 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 						}
 						if (Character->ChosenEnemy)
 						{
-							bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
 
-							if (CanAttackNow)
+							float Dist = FVector::Dist(Character->ChosenEnemy->GetActorLocation(),
+								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+
+							if (Dist <= 300)
 							{
-								CharacterTargetChanged.Broadcast();
-								HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
-								PlayerAttack(Character->ChosenEnemy, Character);
-								break;
-							}
+								bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+
+								if (CanAttackNow)
+								{
+									CharacterActionChanged.Broadcast();
+									CharacterTargetChanged.Broadcast();
+									HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
+									PlayerAttack(Character->ChosenEnemy, Character);
+									NextFighterTurn();
+									return;
+								}
+							}							
 						}
 					}
 				}
@@ -572,6 +585,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 
 				if (Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 				{
+					Character->PlayerActionTypeInd = 2;
+					CharacterActionChanged.Broadcast();
 					CharacterTargetChanged.Broadcast();
 					HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 					OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
@@ -582,11 +597,16 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 					{
 						if (elem->WType == 'E')
 						{
-							if (!CheckPlayerTarget(elem->EnemyCharacter, Character))
+							 Distance = FVector::Dist(elem->EnemyCharacter->GetActorLocation(),
+								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+
+							if (!CheckPlayerTarget(elem->EnemyCharacter, Character) || Distance > 300)
 							{
 								if (elem->EnemyCharacter->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 								{
 									Character->ChosenEnemy = elem->EnemyCharacter;
+									Character->PlayerActionTypeInd = 2;
+									CharacterActionChanged.Broadcast();
 									CharacterTargetChanged.Broadcast();
 									HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 									OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
@@ -608,16 +628,26 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 							}
 						}
 						if (Character->ChosenEnemy)
-						{
-							bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+						{							
 
-							if (CanAttackNow)
+							float Dist = FVector::Dist(Character->ChosenEnemy->GetActorLocation(),
+								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+
+							if (Dist <= 300)
 							{
-								CharacterTargetChanged.Broadcast();
-								HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
-								PlayerAttack(Character->ChosenEnemy, Character);
-								break;
-							}
+								bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+
+								if (CanAttackNow)
+								{
+									Character->PlayerActionTypeInd = 1;
+									CharacterActionChanged.Broadcast();
+									CharacterTargetChanged.Broadcast();
+									HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
+									PlayerAttack(Character->ChosenEnemy, Character);
+									NextFighterTurn();
+									return;
+								}
+							}							
 						}
 					}
 
@@ -627,16 +657,36 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 			{
 				if (!CheckPlayerTarget(Character->ChosenEnemy, Character))
 				{
-					CharacterTargetChanged.Broadcast();
-					HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
-					OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
-					return;
+					if (Character->CheckCanThrow() && Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+					{						
+						Character->PlayerActionTypeInd = 4;
+						CharacterActionChanged.Broadcast();
+						CharacterTargetChanged.Broadcast();
+						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
+						OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
+						return;
+					}
+
+					if (Character->CheckCanShoot() && Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+					{
+						Character->PlayerActionTypeInd = 2;
+						CharacterActionChanged.Broadcast();
+						CharacterTargetChanged.Broadcast();
+						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
+						OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
+						return;
+					}
+					
 				}
 				else
 				{
+					Character->PlayerActionTypeInd = 1;
+					CharacterActionChanged.Broadcast();
 					CharacterTargetChanged.Broadcast();
 					HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 					PlayerAttack(Character->ChosenEnemy, Character);
+					NextFighterTurn();
+					return;
 				}
 			}
 
@@ -656,6 +706,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 				{
 					if (Distance <= ThrowingMaxDistance)
 					{
+						Character->PlayerActionTypeInd = 4;
+						CharacterActionChanged.Broadcast();
 						CharacterTargetChanged.Broadcast();
 						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 						OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
@@ -663,6 +715,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 					}
 					if (Character->CheckCanShoot())
 					{
+						Character->PlayerActionTypeInd = 2;
+						CharacterActionChanged.Broadcast();
 						CharacterTargetChanged.Broadcast();
 						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 						OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
@@ -683,6 +737,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 										GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 									if (Distance <= ThrowingMaxDistance)
 									{
+										Character->PlayerActionTypeInd = 4;
+										CharacterActionChanged.Broadcast();
 										CharacterTargetChanged.Broadcast();
 										HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 										OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
@@ -690,6 +746,8 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 									}
 									if (Character->CheckCanShoot()){
 										Character->ChosenEnemy = elem->EnemyCharacter;
+										Character->PlayerActionTypeInd = 2;
+										CharacterActionChanged.Broadcast();
 										CharacterTargetChanged.Broadcast();
 										HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 										OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
@@ -713,32 +771,46 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 							}
 						}
 						if (Character->ChosenEnemy)
-						{
-							bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+						{						
 
-							if (CanAttackNow)
+							float Dist = FVector::Dist(Character->ChosenEnemy->GetActorLocation(),
+								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+
+							if (Dist <= 300)
 							{
-								CharacterTargetChanged.Broadcast();
-								HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
-								PlayerAttack(Character->ChosenEnemy, Character);
-								break;
-							}
+								bool CanAttackNow = CheckPlayerTarget(Character->ChosenEnemy, Character);
+
+								if (CanAttackNow)
+								{
+									Character->PlayerActionTypeInd = 1;
+									CharacterActionChanged.Broadcast();
+									CharacterTargetChanged.Broadcast();
+									HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
+									PlayerAttack(Character->ChosenEnemy, Character);
+									NextFighterTurn();
+									return;
+								}
+							}							
 						}
 					}
 				}
 			}
 			else
 			{
-				if (!CheckPlayerTarget(Character->ChosenEnemy, Character))
+				if (!CheckPlayerTarget(Character->ChosenEnemy, Character) && Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 				{
 					if (Distance <= ThrowingMaxDistance)
 					{
+						Character->PlayerActionTypeInd = 4;
+						CharacterActionChanged.Broadcast();
 						CharacterTargetChanged.Broadcast();
 						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 						OnPlayerThrow.Broadcast(PlayerThrowCalculate(Character->ChosenEnemy, Character), Character);
 						return;
 					}
 					if (Character->CheckCanShoot()){
+						Character->PlayerActionTypeInd = 2;
+						CharacterActionChanged.Broadcast();
 						CharacterTargetChanged.Broadcast();
 						HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 						OnPlayerShoot.Broadcast(PlayerShotCalculate(Character->ChosenEnemy, Character), Character);
@@ -748,15 +820,21 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 				}
 				else
 				{
+					Character->PlayerActionTypeInd = 1;
+					CharacterActionChanged.Broadcast();
 					CharacterTargetChanged.Broadcast();
 					HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
 					PlayerAttack(Character->ChosenEnemy, Character);
+					NextFighterTurn();
+					return;
 				}
 			}
 		}
 	}
 
-
+	Character->PlayerActionTypeInd = 0;
+	CharacterActionChanged.Broadcast();
+	CharacterTargetChanged.Broadcast();
 	NextFighterTurn();
 }
 
@@ -1467,7 +1545,7 @@ int32 UBattleSystem::PlayerThrowCalculate(ACHEnemyCharacter* Enemy, AP_Character
 	Dice = GetRandomCombatValue(10);
 	int32 ED = Character->ChosenEnemy->CurrentDefence * Dice;
 
-	Character->ChangeStamina(-AttackStaminaCost + 2);
+	Character->ChangeStamina(-AttackStaminaCost + 1);
 
 	if (PA <= ED)
 	{
