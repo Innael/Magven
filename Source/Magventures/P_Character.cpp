@@ -68,6 +68,20 @@ void AP_Character::ChangeStamina(float NewStamina)
 
 }
 
+void AP_Character::ChangeMana(float NewMana)
+{
+	CurrentMana += NewMana;
+	if (CurrentMana <= 0)
+	{
+		CurrentMana = 0;
+	}
+	if (CurrentMana > MaxMana)
+	{
+		CurrentMana = MaxMana;
+	}
+	ManaChangedToUI.Broadcast(Health);
+}
+
 bool AP_Character::CheckCanShoot() {
 	if (HaveRangedWeapon && Quiver && AmmunitionCount > 0)
 		return true;

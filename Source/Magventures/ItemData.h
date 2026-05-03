@@ -124,6 +124,9 @@ class MAGVENTURES_API UPotionData : public UItemData
 public:
 	UPotionData() { Category = EItemCategory::Potion; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Potion")
+	EPotionType PotionType;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	float HealthRestore = 0.0f;
 
@@ -132,6 +135,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mana")
 	float ManaRestore = 0.0f;
+
+
 };
 
 USTRUCT(BlueprintType)

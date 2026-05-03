@@ -226,10 +226,14 @@ public:
 	int32 GetCurrentInitiative() { return CurrentInitiative;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void ChangeHealth(float NewHealth);
 
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void ChangeStamina(float NewStamina);
+
+	UFUNCTION(BlueprintCallable, Category = "Mana")
+	void ChangeMana(float NewMana);
 
 	UFUNCTION(BlueprintCallable)
 	bool CheckCanShoot();

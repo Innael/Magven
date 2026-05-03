@@ -53,3 +53,11 @@ enum class EItemCategory : uint8
 	Quest UMETA(DisplayName = "Quest Item"),
 	Misc UMETA(DisplayName = "Miscellaneous")
 };
+
+UENUM(BlueprintType)
+enum class EPotionType : uint8
+{
+	HealingPotion UMETA(DisplayName = "Healing Potion"),
+	StaminaPotion UMETA(DisplayName = "Stamina Potion"),
+	ManaPotion UMETA(DisplayName = "Mana Potion"),
+};
