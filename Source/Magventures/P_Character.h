@@ -171,8 +171,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Position")
 	int32 Position = 1;  // Положение персонажа на панели интерфейса. 
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Position")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	int32 PlayerActionTypeInd = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	int32 PlayerMenuChoiceInd = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Melee | Weapon | Range")
 	int32 PlayerMeleeRangeType = 1;

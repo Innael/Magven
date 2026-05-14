@@ -832,6 +832,18 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 		}
 	}
 
+	if (Character->PlayerActionTypeInd == 5){
+		OnActionRequested.Broadcast(Character->PlayerMenuChoiceInd, Character->Position);
+		Character->PlayerActionTypeInd = 0;
+
+		FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+		FString ItemStr = TEXT(" пьёт ") + ActionItemName.ToString();
+		HUD->BtLog(WrappedString2 + ItemStr); 
+
+
+		return;
+	}
+
 	Character->PlayerActionTypeInd = 0;
 	CharacterActionChanged.Broadcast();
 	CharacterTargetChanged.Broadcast();

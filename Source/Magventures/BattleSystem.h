@@ -24,6 +24,7 @@ enum class EFormationSide : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCharacterChangeTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCombatActionRequested, int32, SlotIndex, int32, CharIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerShootSignature, int32, ActionCode, AActor*, TargetEnemy);
 
 UCLASS(Blueprintable)
@@ -46,6 +47,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerShootSignature OnPlayerThrow;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat")
+	FOnCombatActionRequested OnActionRequested;
 
 	// Пример функции для начала боя
 	UFUNCTION(BlueprintCallable, Category = "Battle")
@@ -84,6 +88,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ThrowingMaxDistance = 1500;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FText ActionItemName;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat | Formation")
 	void SavePlayerDirection(FRotator NewRotation);
