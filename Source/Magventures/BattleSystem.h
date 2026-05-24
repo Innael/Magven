@@ -48,6 +48,12 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerShootSignature OnPlayerThrow;
 
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerShootSignature OnPlayerAttack;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerShootSignature OnPlayerSecondWeaponAttack;
+
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
 	FOnCombatActionRequested OnActionRequested;
 
@@ -74,6 +80,8 @@ class MAGVENTURES_API UBattleSystem : public UObject
 
 	UPROPERTY(BlueprintReadWrite)
 	bool TurnNowOn = false;
+
+	bool EndBattleTurn = false;
 
 
 	bool FormationCentre = false;
@@ -174,7 +182,11 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	bool CheckPlayerTarget(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
+	UFUNCTION(BlueprintCallable)
 	void PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Character);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerSecondWeaponAttack(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
 	UFUNCTION(BlueprintCallable)
 	void PlayerShotEnd(AP_Character* Character, int32 ShotResult);
