@@ -4,39 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "MyGameTypes.h"
 #include "AttributeComponent.generated.h"
-
-UENUM(BlueprintType)
-enum class ECharacterSkill : uint8
-{
-	CloseCombatSkill UMETA(DisplayName = "Ближний бой", Category = "General"),
-	RangedCombatSkill UMETA(DisplayName = "Дальний бой", Category = "General"),
-	DualWeaponSkill UMETA(DisplayName = "Двойное оружие", Category = "General"),
-	ArtifactsKnowledge UMETA(DisplayName = "Знание артефактов", Category = "General"),
-
-	SwordSkill UMETA(DisplayName = "Меч", Category = "Weapon"),
-	DaggerSkill UMETA(DisplayName = "Ножи и кинжалы", Category = "Weapon"),
-	BluntSkill UMETA(DisplayName = "Дробящее оружие", Category = "Weapon"),
-	AxeSkill UMETA(DisplayName = "Топоры", Category = "Weapon"),
-	PolearmsSkill UMETA(DisplayName = "Древковое", Category = "Weapon"),
-	StaffSkill UMETA(DisplayName = "Посохи", Category = "Weapon"),
-	ShieldSkill UMETA(DisplayName = "Щит", Category = "Weapon"),
-	BowSkill UMETA(DisplayName = "Лук", Category = "Weapon"),
-	CrossBowSkill UMETA(DisplayName = "Арбалет", Category = "Weapon"),
-	ThrowingSkill UMETA(DisplayName = "Метательное", Category = "Weapon"),
-
-	ControlOverPower UMETA(DisplayName = "Контроль силы", Category = "Magic"),
-	FireMagicSkill UMETA(DisplayName = "Магия огня", Category = "Magic"),
-	WaterMagicSkill UMETA(DisplayName = "Магия воды", Category = "Magic"),
-	AirMagicSkill UMETA(DisplayName = "Магия воздуха", Category = "Magic"),
-	EarthMagicSkill UMETA(DisplayName = "Магия земли", Category = "Magic"),
-	LifeMagicSkill UMETA(DisplayName = "Магия жизни", Category = "Magic"),
-	NatureMagicSkill UMETA(DisplayName = "Магия природы", Category = "Magic"),
-	MindMagicSkill UMETA(DisplayName = "Магия разума", Category = "Magic"),
-	DeathMagicSkill UMETA(DisplayName = "Магия смерти", Category = "Magic"),
-
-	LocksAndTrapsSkill UMETA(DisplayName = "Замки и ловушки", Category = "Special")
-};
 
 
 UCLASS(BlueprintType, Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
