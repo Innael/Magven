@@ -196,7 +196,7 @@ protected:
 	float MaxMana = 50;
 
 	UPROPERTY(BlueprintReadWrite)
-	float CurrentMana = 0;
+	float CurrentMana = 50;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weight")
 	float EquipmentWeight = 0;

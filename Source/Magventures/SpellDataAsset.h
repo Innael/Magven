@@ -40,7 +40,10 @@ struct FSpellData
 	int32 ManaCost; // Цена заклинания в мане
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visuals")
-	ESpellProjectileType ProjectileType; 
+	ESpellProjectileType ProjectileType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Info")
+	FText SpellDescription; // Краткое описание эффекта заклинания
 };
 
 
@@ -55,5 +58,13 @@ class MAGVENTURES_API USpellDataAsset : public UPrimaryDataAsset
 	// Сама структура с данными заклинания, доступная для редактирования
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spell Data")
 	FSpellData SpellData;
+
+	/** Возвращает читаемое имя школы магии */
+	UFUNCTION(BlueprintPure, Category = "Spell Data")
+	FText GetSchoolDisplayName() const;
+
+	/** Возвращает читаемое имя типа цели */
+	UFUNCTION(BlueprintPure, Category = "Spell Data")
+	FText GetTargetTypeDisplayName() const;
 
 };

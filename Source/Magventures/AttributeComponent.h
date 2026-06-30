@@ -21,6 +21,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
 	TMap<ECharacterSkill, float> CharacterSkills;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RPG System|Magic")
+	TArray<class USpellDataAsset*> KnownSpells;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
 	int32 Strength = 50;
 		
