@@ -44,6 +44,9 @@ struct FSpellData
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Info")
 	FText SpellDescription; // Краткое описание эффекта заклинания
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Info")
+	int32 SpellLevel;
 };
 
 
