@@ -5,6 +5,7 @@
 #include "CHEnemyCharacter.h"
 #include "P_Character.h"
 #include "CombatCharacterWrapper.h"
+#include "MyGameTypes.h"
 #include "Magventure_HUD.h"
 
 UBattleSystem::UBattleSystem()
@@ -748,6 +749,36 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 			}
 
 		}
+	}
+
+	if (Character->PlayerActionTypeInd == 3)
+	{
+
+		bool bCanCast = Character->CanAct && Character->PlannedSpellPowerLevel > 0 &&
+						Character->PlannedSpellData.TargetType == ESpellTargetType::SingleEnemy && Character->ChosenEnemy;
+				
+		if (bCanCast)
+		{
+			if (Character->ChosenEnemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+			{
+				float Dist = FVector::Dist(Character->ChosenEnemy->GetActorLocation(),
+				GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+
+				if (Dist <= Character->PlannedSpellData.MaxCastDistance &&
+						Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel <= Character->GetCurrentMana())
+							{
+					HUD->BP_RotateCameraToActor(Character->ChosenEnemy);
+					OnPlayerMagicAttack.Broadcast(Character->Position, Character->ChosenEnemy);
+					return;
+				}
+			}
+		}
+		
+		
+		Character->PlayerActionTypeInd = 0;
+		CharacterActionChanged.Broadcast();
+		CharacterTargetChanged.Broadcast();
+		NextFighterTurn();
 	}
 
 	if (Character->PlayerActionTypeInd == 4)
@@ -1771,6 +1802,105 @@ void UBattleSystem::PlayerThrowEnd(AP_Character* Character, int32 ShotResult)
 	{
 		FString QuiverEmptyStr = TEXT(" обнаруживает, что метать больше нечего.");
 		HUD->BtLog(WrappedString2 + QuiverEmptyStr);
+	}
+
+	NextFighterTurn();
+}
+
+void UBattleSystem::PlayerMagicCastEnd(AP_Character* Character, int32 CastResult)
+{
+
+	if (!Character || !Character->ChosenEnemy)
+	{
+		return;
+	}
+
+	FString tempStr = TEXT(" сплетает ");
+	FString tempStr2 = TEXT("  во врага по имени ");
+	FString CastName = Character->PlannedSpellData.SpellName.ToString();
+
+	FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Character->ChosenEnemy->Name);
+	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+
+	float ManaCost = Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel;
+	Character->ChangeMana(-ManaCost);
+
+	if (CastResult == 0)
+	{
+
+		if (Character->PlannedSpellData.TargetType == ESpellTargetType::SingleEnemy)
+		{
+			int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+			int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+
+			// 1. Создаем локальный массив для хранения индексов живых персонажей
+			TArray<int32> ValidTargetIndices;
+
+			// 2. Проходимся по вашему главному массиву персонажей отряда
+			for (int32 i = 0; i < CharactersPawns.Num(); ++i)
+			{
+				// Проверяем, что указатель на персонажа вообще существует в памяти
+				if (CharactersPawns[i] != nullptr)
+				{
+					// Проверяем ваши публичные поля: персонаж существует в мире и он жив
+					if (CharactersPawns[i]->PlayerPawn->Char_Exist && CharactersPawns[i]->PlayerPawn->Live)
+					{
+						// Сохраняем ИНДЕКС этого персонажа во вспомогательный массив
+						ValidTargetIndices.Add(i);
+					}
+				}
+			}
+
+			// 3. Проверяем величину получившегося массива (есть ли вообще в отряде живые?)
+			int32 ValidTargetsCount = ValidTargetIndices.Num();
+
+			if (ValidTargetsCount > 0)
+			{
+				// 4. Случайно выбираем индекс ИЗ НАШЕГО ДИАПАЗОНА (от 0 до КоличествоЖивых - 1)
+				int32 RandomListIndex = FMath::RandRange(0, ValidTargetsCount - 1);
+
+				// Достаем РЕАЛЬНЫЙ индекс персонажа из главного массива
+				int32 TargetCharacterIndex = ValidTargetIndices[RandomListIndex];
+
+				// Получаем указатель на бедолагу, в которого прилетит отдача магии
+				AP_Character* DamagedCharacter = CharactersPawns[TargetCharacterIndex]->PlayerPawn;
+				CurrentMagicDamage *= 0.5;
+				DamagedCharacter->ChangeHealth(-CurrentMagicDamage);
+
+				WrappedString1 = FormatLogName(DamagedCharacter->Name, DamagedCharacter->Position);
+
+				FString FullLog = FString::Printf(TEXT("%s плетёт %s , но ошибается и заклиние бьёт в члена отряда по имени %s и наносит %d урона."), *WrappedString2, *CastName,
+					*WrappedString1, CurrentMagicDamage);
+
+				HUD->BtLog(FullLog);
+			}
+		}
+	}
+	else if (CastResult == 1)
+	{
+		FString FullLog =
+			FString::Printf(TEXT("%s терпит неудачу в плетении заклинания."), *WrappedString2);
+		HUD->BtLog(FullLog);
+	}
+	else if (CastResult == 2)
+	{
+
+		if (Character->PlannedSpellData.TargetType == ESpellTargetType::SingleEnemy)
+		{
+			int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+			int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+
+			Character->ChosenEnemy->ChangeHealth(-CurrentMagicDamage);
+			Character->ChosenEnemy->ChangeStamina(-ReciveAttackStaminaCost);
+
+			FString FullLog = FString::Printf(TEXT("%s плетёт %s во врага по имени %s и наносит %d урона."), *WrappedString2, *CastName,
+				*WrappedString1, CurrentMagicDamage);
+
+			HUD->BtLog(FullLog);
+		}
+		
 	}
 
 	NextFighterTurn();

@@ -47,6 +47,12 @@ struct FSpellData
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Info")
 	int32 SpellLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	class USoundBase* CastSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	class USoundBase* ImpactSound;
 };
 
 

@@ -79,7 +79,7 @@ void AP_Character::ChangeMana(float NewMana)
 	{
 		CurrentMana = MaxMana;
 	}
-	ManaChangedToUI.Broadcast(Health);
+	ManaChangedToUI.Broadcast(CurrentMana);
 }
 
 bool AP_Character::CheckCanShoot() {

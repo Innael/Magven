@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "AttributeComponent.h"
 #include "ItemData.h"
+#include "SpellDataAsset.h"
 #include "CHEnemyCharacter.h"
 #include "P_Character.generated.h"
 
@@ -86,6 +87,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
 	UArmorData* Shield = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
+	FSpellData PlannedSpellData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
+	int32 PlannedSpellPowerLevel = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Name")
 	FString Name;
@@ -227,6 +234,9 @@ public:
 	}
 
 	int32 GetCurrentInitiative() { return CurrentInitiative;
+	}
+
+	float GetCurrentMana() { return CurrentMana;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Health")

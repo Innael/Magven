@@ -54,6 +54,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerShootSignature OnPlayerSecondWeaponAttack;
 
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerShootSignature OnPlayerMagicAttack;
+
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
 	FOnCombatActionRequested OnActionRequested;
 
@@ -193,6 +196,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayerThrowEnd(AP_Character* Character, int32 ShotResult);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerMagicCastEnd(AP_Character* Character, int32 CastResult);
 
 	int32 PlayerShotCalculate(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
