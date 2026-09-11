@@ -58,6 +58,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ACHEnemyCharacter* ChosenEnemy = nullptr;
 
+	/** Центр взрыва (для радиальных заклинаний типа Огненного шара) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
+	FVector PlannedRadialCenter;
+
+	/** Направление конуса (для секторных заклинаний) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
+	FVector PlannedSectorDirection;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UWeaponData* MeleeWeapon = nullptr;
 

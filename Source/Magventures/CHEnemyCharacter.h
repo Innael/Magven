@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Name")
 	FString Name;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Enemy Info")
+	int32 EnemyGroupID;
+
 	UPROPERTY(BlueprintReadWrite)
 	AP_Character* CurrentTarget;
 
