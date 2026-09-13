@@ -24,6 +24,7 @@ enum class EFormationSide : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCharacterChangeTarget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerRadialMagicAttack, AActor*, Caster);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCombatActionRequested, int32, SlotIndex, int32, CharIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerShootSignature, int32, ActionCode, AActor*, TargetEnemy);
 
@@ -56,6 +57,11 @@ class MAGVENTURES_API UBattleSystem : public UObject
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerShootSignature OnPlayerMagicAttack;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerRadialMagicAttack OnPlayerRadialMagicAttack;
+
+
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
 	FOnCombatActionRequested OnActionRequested;
@@ -199,6 +205,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayerMagicCastEnd(AP_Character* Character, int32 CastResult);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerRadialMagicCastEnd(AP_Character* Character, int32 CastResult);
 
 	int32 PlayerShotCalculate(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
