@@ -61,6 +61,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerRadialMagicAttack OnPlayerRadialMagicAttack;
 
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerRadialMagicAttack OnPlayerConeSectorlMagicAttack;
+
 
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
@@ -208,6 +211,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayerRadialMagicCastEnd(AP_Character* Character, int32 CastResult);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerSectorMagicCastEnd(AP_Character* Character, int32 CastResult);
 
 	int32 PlayerShotCalculate(ACHEnemyCharacter* Enemy, AP_Character* Character);
 

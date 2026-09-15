@@ -29,5 +29,8 @@ class MAGVENTURES_API AMagventure_HUD : public AHUD
 
 		UFUNCTION(BlueprintImplementableEvent, Category = "Combat | Camera")
 		void BP_RotateCameraToLocation(FVector TargetLocation);
+
+		UFUNCTION(BlueprintImplementableEvent, Category = "Combat | Camera")
+		void BP_RotateCameraToDirection(FRotator TargetDirection);
 	
 };

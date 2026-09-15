@@ -1,7 +1,8 @@
 // Magventures Game by Bolshakov Sergey.  All RightsReserved.
 
-
 #include "AttributeComponent.h"
+#include "SpellDataAsset.h"
+#include "Algo/Sort.h"
 
 // Sets default values for this component's properties
 UAttributeComponent::UAttributeComponent()
@@ -114,4 +115,25 @@ void UAttributeComponent::CommitSkillPoints(ECharacterSkill SkillType, int32 Add
 
 	// Так как игрок обязан потратить ВСЁ, мы можем смело обнулять остаток очков компонента
 	AvailableSkillPoints = 0;
+}
+
+TArray<USpellDataAsset*> UAttributeComponent::GetSortedSpellsByLevel(const TArray<USpellDataAsset*>& InSpells)
+{
+	TArray<USpellDataAsset*> SortedResult = InSpells;
+
+	if (SortedResult.Num() <= 1)
+	{
+		return SortedResult;
+	}
+
+	// Удаляем из массива nullptr (если они там случайно оказались),
+	// чтобы сортировка не упала при чтении данных
+	SortedResult.RemoveAll([](const USpellDataAsset* Spell) { return Spell == nullptr; });
+
+	// Элегантная замена: используем Algo::SortBy.
+	// Мы просто пишем проекцию (лямбду), которая показывает движку,
+	// К какому числу внутри объекта нужно пробиться для сортировки.
+	Algo::SortBy(SortedResult, [](const USpellDataAsset* Spell) { return Spell->SpellData.SpellLevel; });
+
+	return SortedResult;
 }

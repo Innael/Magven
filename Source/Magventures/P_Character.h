@@ -64,7 +64,7 @@ public:
 
 	/** Ќаправление конуса (дл€ секторных заклинаний) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
-	FVector PlannedSectorDirection;
+	FRotator PlannedSectorDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UWeaponData* MeleeWeapon = nullptr;
@@ -194,6 +194,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Melee | Weapon | Range")
 	int32 PlayerMeleeRangeType = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
+	int32 ChosenGroup = 0;
 
 protected:
 	// Called when the game starts or when spawned

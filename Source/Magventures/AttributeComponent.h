@@ -78,5 +78,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "RPG System|LevelUp")
 	void CommitSkillPoints(ECharacterSkill SkillType, int32 AddedPoints);
+
+	UFUNCTION(BlueprintCallable, Category = "Magic|Attributes")
+	TArray<USpellDataAsset*> GetSortedSpellsByLevel(const TArray<USpellDataAsset*>& InSpells);
 		
 };

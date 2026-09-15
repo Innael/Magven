@@ -785,7 +785,13 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 					OnPlayerRadialMagicAttack.Broadcast(Character);
 					return;
 				}				
-			}			
+			}
+			else if (Character->PlannedSpellData.TargetType == ESpellTargetType::ConeSector)
+			{
+				HUD->BP_RotateCameraToDirection(Character->PlannedSectorDirection);
+				OnPlayerConeSectorlMagicAttack.Broadcast(Character);
+				return;
+			}
 		}
 		
 		
@@ -1989,6 +1995,97 @@ void UBattleSystem::PlayerRadialMagicCastEnd(AP_Character* Character, int32 Cast
 					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
 					FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
 					HUD->BtLog(FullLog);
+				}
+			}
+		}
+	}
+
+	NextFighterTurn();
+}
+
+void UBattleSystem::PlayerSectorMagicCastEnd(AP_Character* Character, int32 CastResult)
+{
+
+	if (!Character)
+		return;
+
+	FString CastName = Character->PlannedSpellData.SpellName.ToString();
+	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+
+	float ManaCost = Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel;
+	Character->ChangeMana(-ManaCost);
+
+	if (CastResult == 0)
+	{
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s , но ошибается и заклиние бьёт по отряду."), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		for (const auto& elem : CharactersPawns)
+		{
+			if (elem->PlayerPawn->Char_Exist && elem->PlayerPawn->Live)
+			{
+				int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+				int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+				int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+				CurrentMagicDamage *= 0.5;
+				elem->PlayerPawn->ChangeHealth(-CurrentMagicDamage);
+
+				FString WrappedString1 = FormatLogName(elem->PlayerPawn->Name, elem->PlayerPawn->Position);
+
+				FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+				HUD->BtLog(FullLog);
+			}
+		}
+	}
+	else if (CastResult == 1)
+	{
+		FString FullLog = FString::Printf(TEXT("%s терпит неудачу в плетении заклинания."), *WrappedString2);
+		HUD->BtLog(FullLog);
+	}
+	else if (CastResult == 2)
+	{
+
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s, в результате:"), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		FVector ConeDirection = Character->PlannedSectorDirection.Vector();
+
+		// Получаем позицию нашего отряда (кастер физически находится в точке камеры отряда)
+		FVector CasterPos = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+				
+		float MaxConeDistance = 2000.0f; // Заданная дальность для секторных заклинаний
+		float MaxConeAngle = 35.0f;		 // Заданный угол отклонения от центра
+
+		for (const auto& elem : Fighters)
+		{
+			if (elem->WType == 'E' && elem->EnemyCharacter)
+			{				
+				FVector EnemyPos = elem->EnemyCharacter->GetActorLocation();
+
+				float Distance = FVector::Dist(CasterPos, EnemyPos);
+
+				if (Distance <= MaxConeDistance)
+				{
+					FVector DirToEnemy = (EnemyPos - CasterPos).GetSafeNormal();
+
+					// Шаг В. Математика конуса: Скалярное произведение векторов (Dot Product)
+					float DotProduct = FVector::DotProduct(ConeDirection, DirToEnemy);
+
+					// Превращаем косинус в обычные человеческие градусы через арккосинус
+					float Angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+
+					if (Angle <= MaxConeAngle)
+					{
+						int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+						int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+						int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+						elem->EnemyCharacter->ChangeHealth(-CurrentMagicDamage);
+						elem->EnemyCharacter->ChangeStamina(-ReciveAttackStaminaCost);
+
+						FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+						FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+						HUD->BtLog(FullLog);
+					}					
 				}
 			}
 		}
