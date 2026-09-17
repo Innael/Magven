@@ -792,6 +792,63 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 				OnPlayerConeSectorlMagicAttack.Broadcast(Character);
 				return;
 			}
+			else if (Character->PlannedSpellData.TargetType == ESpellTargetType::EnemyGroup)
+			{
+				bool InSpellRange = false;
+				TArray<ACHEnemyCharacter*> TargetGroup;
+				for (const auto& elem : Fighters)
+				{
+					if (elem->WType == 'E')
+					{
+						if (elem->EnemyCharacter->Live && elem->EnemyCharacter->EnemyGroupID == Character->ChosenGroup) 
+						{
+							float Dist = FVector::Dist(elem->EnemyCharacter->GetActorLocation(),
+								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+							if (Dist <= Character->PlannedSpellData.MaxCastDistance)
+								InSpellRange = true;
+							
+							TargetGroup.Add(elem->EnemyCharacter);
+						}
+					}
+						
+				}
+
+				if (InSpellRange)
+				{
+					HUD->BP_RotateCameraToActor(TargetGroup[0]);
+					OnGroupMagicAttack.Broadcast(TargetGroup, Character);
+					return;
+				}
+				
+			}
+			else if (Character->PlannedSpellData.TargetType == ESpellTargetType::AllEnemies)
+			{
+				bool InSpellRange = false;
+				TArray<ACHEnemyCharacter*> TargetGroup;
+				for (const auto& elem : Fighters)
+				{
+					if (elem->WType == 'E')
+					{
+						if (elem->EnemyCharacter->Live)
+						{
+							float Dist = FVector::Dist(elem->EnemyCharacter->GetActorLocation(),
+								GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+							if (Dist <= Character->PlannedSpellData.MaxCastDistance)
+							{
+								InSpellRange = true;
+								TargetGroup.Add(elem->EnemyCharacter);
+							}										
+						}
+					}
+				}
+
+				if (InSpellRange)
+				{
+					HUD->BP_RotateCameraToActor(TargetGroup[0]);
+					OnAllEnemiesMagicAttack.Broadcast(TargetGroup, Character);
+					return;
+				}
+			}
 		}
 		
 		
@@ -1623,6 +1680,12 @@ bool UBattleSystem::CheckPlayerTarget(ACHEnemyCharacter* Enemy, AP_Character* Ch
 
 void UBattleSystem::PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Character) {
 
+	if (!Character || !Character->ChosenEnemy)
+	{
+		NextFighterTurn();
+		return;
+	}
+
 	Dice = GetRandomCombatValue(10);
 	int32 PA = Character->CurrentAttack * Dice;
 	Dice = GetRandomCombatValue(10);
@@ -1663,6 +1726,12 @@ void UBattleSystem::PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Charact
 
 void UBattleSystem::PlayerSecondWeaponAttack(ACHEnemyCharacter* Enemy, AP_Character* Character)
 {
+
+	if (!Character || !Character->ChosenEnemy)
+	{
+		NextFighterTurn();
+		return;
+	}
 
 	Dice = GetRandomCombatValue(10);
 	int32 PA = Character->CurrentAttack * Dice;
@@ -1748,6 +1817,7 @@ int32 UBattleSystem::PlayerThrowCalculate(ACHEnemyCharacter* Enemy, AP_Character
 void UBattleSystem::PlayerShotEnd(AP_Character* Character, int32 ShotResult) {
 
 	if (!Character || !Character->ChosenEnemy){		
+		NextFighterTurn();
 		return;
 	}		
 
@@ -1788,6 +1858,7 @@ void UBattleSystem::PlayerThrowEnd(AP_Character* Character, int32 ShotResult)
 
 	if (!Character || !Character->ChosenEnemy)
 	{
+		NextFighterTurn();
 		return;
 	}
 
@@ -1832,6 +1903,7 @@ void UBattleSystem::PlayerMagicCastEnd(AP_Character* Character, int32 CastResult
 
 	if (!Character || !Character->ChosenEnemy)
 	{
+		NextFighterTurn();
 		return;
 	}
 
@@ -1930,7 +2002,10 @@ void UBattleSystem::PlayerRadialMagicCastEnd(AP_Character* Character, int32 Cast
 {
 
 	if (!Character)
-		return;	
+	{
+		NextFighterTurn();
+		return;
+	}
 	
 	FString CastName = Character->PlannedSpellData.SpellName.ToString();
 	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
@@ -2007,7 +2082,11 @@ void UBattleSystem::PlayerSectorMagicCastEnd(AP_Character* Character, int32 Cast
 {
 
 	if (!Character)
+	{
+		NextFighterTurn();
 		return;
+	}
+		
 
 	FString CastName = Character->PlannedSpellData.SpellName.ToString();
 	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
@@ -2088,6 +2167,137 @@ void UBattleSystem::PlayerSectorMagicCastEnd(AP_Character* Character, int32 Cast
 					}					
 				}
 			}
+		}
+	}
+
+	NextFighterTurn();
+}
+
+void UBattleSystem::PlayerGroupMagicCastEnd(const TArray<ACHEnemyCharacter*>& Targets, AP_Character* Character, int32 Result)
+{
+
+	if (Targets.Num() == 0 || !Character)
+	{
+		NextFighterTurn(); // Если целей нет, просто передаем ход
+		return;
+	}
+
+	FString CastName = Character->PlannedSpellData.SpellName.ToString();
+	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+
+	float ManaCost = Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel;
+	Character->ChangeMana(-ManaCost);
+
+	if (Result == 0)
+	{
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s , но ошибается и заклиние бьёт по отряду."), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		for (const auto& elem : CharactersPawns)
+		{
+			if (elem->PlayerPawn->Char_Exist && elem->PlayerPawn->Live)
+			{
+				int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+				int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+				int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+				CurrentMagicDamage *= 0.5;
+				elem->PlayerPawn->ChangeHealth(-CurrentMagicDamage);
+
+				FString WrappedString1 = FormatLogName(elem->PlayerPawn->Name, elem->PlayerPawn->Position);
+
+				FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+				HUD->BtLog(FullLog);
+			}
+		}
+	}
+	else if (Result == 1)
+	{
+		FString FullLog = FString::Printf(TEXT("%s терпит неудачу в плетении заклинания."), *WrappedString2);
+		HUD->BtLog(FullLog);
+	}
+	else if (Result == 2)
+	{
+
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s, в результате:"), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);		
+		
+
+		for (const auto& elem : Targets)
+		{
+			int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+			int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+			elem->ChangeHealth(-CurrentMagicDamage);
+			elem->ChangeStamina(-ReciveAttackStaminaCost);
+
+			FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->Name);
+			FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+			HUD->BtLog(FullLog);
+		}
+	}
+
+	NextFighterTurn();
+}
+
+void UBattleSystem::PlayerAllEnemiesMagicCastEnd(const TArray<ACHEnemyCharacter*>& Targets, AP_Character* Character, int32 Result)
+{
+
+	if (Targets.Num() == 0 || !Character)
+	{
+		NextFighterTurn(); // Если целей нет, просто передаем ход
+		return;
+	}
+
+	FString CastName = Character->PlannedSpellData.SpellName.ToString();
+	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+
+	float ManaCost = Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel;
+	Character->ChangeMana(-ManaCost);
+
+	if (Result == 0)
+	{
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s , но ошибается и заклиние бьёт по отряду."), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		for (const auto& elem : CharactersPawns)
+		{
+			if (elem->PlayerPawn->Char_Exist && elem->PlayerPawn->Live)
+			{
+				int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+				int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+				int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+				CurrentMagicDamage *= 0.5;
+				elem->PlayerPawn->ChangeHealth(-CurrentMagicDamage);
+
+				FString WrappedString1 = FormatLogName(elem->PlayerPawn->Name, elem->PlayerPawn->Position);
+
+				FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+				HUD->BtLog(FullLog);
+			}
+		}
+	}
+	else if (Result == 1)
+	{
+		FString FullLog = FString::Printf(TEXT("%s терпит неудачу в плетении заклинания."), *WrappedString2);
+		HUD->BtLog(FullLog);
+	}
+	else if (Result == 2)
+	{
+
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s, в результате:"), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		for (const auto& elem : Targets)
+		{
+			int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+			int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+			elem->ChangeHealth(-CurrentMagicDamage);
+			elem->ChangeStamina(-ReciveAttackStaminaCost);
+
+			FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->Name);
+			FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+			HUD->BtLog(FullLog);
 		}
 	}
 

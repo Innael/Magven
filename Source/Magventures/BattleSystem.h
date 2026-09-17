@@ -27,6 +27,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCharacterChangeTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerRadialMagicAttack, AActor*, Caster);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCombatActionRequested, int32, SlotIndex, int32, CharIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerShootSignature, int32, ActionCode, AActor*, TargetEnemy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGroupMagicAttack, const TArray<ACHEnemyCharacter*>&, TargetEnemies, AP_Character*, Caster);
 
 UCLASS(Blueprintable)
 class MAGVENTURES_API UBattleSystem : public UObject
@@ -64,7 +65,11 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerRadialMagicAttack OnPlayerConeSectorlMagicAttack;
 
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Delegates")
+	FOnGroupMagicAttack OnGroupMagicAttack;
 
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Delegates")
+	FOnGroupMagicAttack OnAllEnemiesMagicAttack;
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat")
 	FOnCombatActionRequested OnActionRequested;
@@ -210,10 +215,16 @@ protected:
 	void PlayerMagicCastEnd(AP_Character* Character, int32 CastResult);
 
 	UFUNCTION(BlueprintCallable)
-	void PlayerRadialMagicCastEnd(AP_Character* Character, int32 CastResult);
+	void PlayerRadialMagicCastEnd(AP_Character* Character, int32 CastResult);	
 
 	UFUNCTION(BlueprintCallable)
 	void PlayerSectorMagicCastEnd(AP_Character* Character, int32 CastResult);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerGroupMagicCastEnd(const TArray<ACHEnemyCharacter*>& Targets, AP_Character* Character, int32 Result);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerAllEnemiesMagicCastEnd(const TArray<ACHEnemyCharacter*>& Targets, AP_Character* Character, int32 Result);
 
 	int32 PlayerShotCalculate(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
