@@ -41,6 +41,9 @@ struct FSpellData
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visuals")
 	ESpellProjectileType ProjectileType;
+		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Info")
+	EAllySpellEffectType PositiveEffect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Info")
 	FText SpellDescription; // Краткое описание эффекта заклинания

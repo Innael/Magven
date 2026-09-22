@@ -119,3 +119,15 @@ enum class ESpellProjectileType : uint8
 	PoisonCloud UMETA(DisplayName = "Облако яда")
 	// Сюда вы сможете дописывать любые новые типы визуальных снарядов
 };
+
+UENUM(BlueprintType)
+enum class EAllySpellEffectType : uint8
+{
+	None UMETA(DisplayName = "Нет"),
+	Healing UMETA(DisplayName = "Лечение"),
+	Rest UMETA(DisplayName = "Отдых"),
+	CureNegative UMETA(DisplayName = "Снятие негативных эффектов"),
+	Buff UMETA(DisplayName = "Позитивный эффект"),
+	ManaRegen UMETA(DisplayName = "Восстановление маны"),
+	Resurrection UMETA(DisplayName = "Воскрешение")
+};

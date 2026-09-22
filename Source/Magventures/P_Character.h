@@ -198,6 +198,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
 	int32 ChosenGroup = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")	
+	AP_Character* ChosenAlly = nullptr;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
+	int32 ChosenAllyIndx = 0;
+	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;	

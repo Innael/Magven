@@ -849,6 +849,17 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 					return;
 				}
 			}
+			else if (Character->PlannedSpellData.TargetType == ESpellTargetType::SingleAlly)
+			{
+
+				if (!Character->ChosenAlly){
+					NextFighterTurn();
+					return;
+				}
+
+				OnPlayerSingleAllyMagic.Broadcast(Character);
+				return;
+			}
 		}
 		
 		

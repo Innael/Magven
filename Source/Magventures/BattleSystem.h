@@ -57,6 +57,9 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	FOnPlayerShootSignature OnPlayerSecondWeaponAttack;
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
+	FOnPlayerRadialMagicAttack OnPlayerSingleAllyMagic;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
 	FOnPlayerShootSignature OnPlayerMagicAttack;
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat | Events")
