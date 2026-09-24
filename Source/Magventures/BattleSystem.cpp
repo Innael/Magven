@@ -856,8 +856,18 @@ void UBattleSystem::PlayerTurn(AP_Character* Character) {
 					NextFighterTurn();
 					return;
 				}
+				if (!Character->ChosenAlly->Live)
+				{
+					NextFighterTurn();
+					return;
+				}
 
 				OnPlayerSingleAllyMagic.Broadcast(Character);
+				return;
+			}
+			else if (Character->PlannedSpellData.TargetType == ESpellTargetType::AllAllies)
+			{
+				OnPlayerAllAllyMagic.Broadcast(Character);
 				return;
 			}
 		}
@@ -2310,6 +2320,106 @@ void UBattleSystem::PlayerAllEnemiesMagicCastEnd(const TArray<ACHEnemyCharacter*
 			FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
 			HUD->BtLog(FullLog);
 		}
+	}
+
+	NextFighterTurn();
+}
+
+void UBattleSystem::PlayerSyngleAllyMagicCastEnd(AP_Character* Character, int32 CastResult)
+{
+
+	if (!Character || !Character->ChosenAlly)
+	{
+		NextFighterTurn();
+		return;
+	}
+		
+	if (!Character->ChosenAlly->Live)
+	{
+		NextFighterTurn();
+		return;
+	}
+
+	FString CastName = Character->PlannedSpellData.SpellName.ToString();
+	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+
+	float ManaCost = Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel;
+	Character->ChangeMana(-ManaCost);
+	
+	if (CastResult < 2)
+	{
+		FString FullLog = FString::Printf(TEXT("%s терпит неудачу в плетении заклинания."), *WrappedString2);
+		HUD->BtLog(FullLog);
+	}
+	else if (CastResult == 2)
+	{
+
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s, в результате:"), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::Healing)
+		{
+			int32 MinMagicHeal = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+			int32 MaxMagicHeal = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+			int32 CurrentMagicHeal = FMath ::RandRange(MinMagicHeal, MaxMagicHeal);
+
+			Character->ChosenAlly->ChangeHealth(CurrentMagicHeal);
+
+			FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+			FullLog = FString::Printf(TEXT("%s восстанавливает %d здоровья."), *WrappedString1, CurrentMagicHeal);
+			HUD->BtLog(FullLog);
+		}
+
+	}
+
+	NextFighterTurn();
+}
+
+void UBattleSystem::PlayerAllAllyMagicCastEnd(AP_Character* Character, int32 CastResult)
+{
+
+	if (!Character)
+	{
+		NextFighterTurn();
+		return;
+	}
+
+	FString CastName = Character->PlannedSpellData.SpellName.ToString();
+	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+
+	float ManaCost = Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel;
+	Character->ChangeMana(-ManaCost);
+
+	if (CastResult < 2)
+	{
+		FString FullLog = FString::Printf(TEXT("%s терпит неудачу в плетении заклинания."), *WrappedString2);
+		HUD->BtLog(FullLog);
+	}
+	else if (CastResult == 2)
+	{
+
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s, в результате:"), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		for (const auto& elem : CharactersPawns)
+		{
+			if (elem->PlayerPawn)
+			{
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::Healing)
+				{
+					int32 MinMagicHeal = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+					int32 MaxMagicHeal = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+					int32 CurrentMagicHeal = FMath ::RandRange(MinMagicHeal, MaxMagicHeal);
+
+					elem->PlayerPawn->ChangeHealth(CurrentMagicHeal);
+
+					FString WrappedString1 = FormatLogName(elem->PlayerPawn->Name, elem->PlayerPawn->Position);
+					FullLog = FString::Printf(TEXT("%s восстанавливает %d здоровья."), *WrappedString1, CurrentMagicHeal);
+					HUD->BtLog(FullLog);
+				}
+			}
+		}
+		
 	}
 
 	NextFighterTurn();
