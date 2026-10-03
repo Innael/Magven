@@ -122,8 +122,10 @@ void AP_Character::RecalculateDamage() {
 	}
 	else
 	{
-		CurrentMinDamage = FMath::Max(0.f, 1 * DamageMultiplier);
-		CurrentMaxDamage = FMath::Max(0.f, 2 * DamageMultiplier);
+		float UnarmedDamageMultiplier = DamageMultiplier;
+		UnarmedDamageMultiplier += (CharAttribute->GetSkillValue(ECharacterSkill::UnarmedSkill) * 0.085f);
+		CurrentMinDamage = FMath::Max(0.f, 1 + UnarmedDamageMultiplier);
+		CurrentMaxDamage = FMath::Max(0.f, 3 + UnarmedDamageMultiplier);
 		PlayerMeleeRangeType = 1;
 	}
 
@@ -181,7 +183,9 @@ void AP_Character::RecalculateDamage() {
 
 void AP_Character::RecalculateDefence() {
 
-	int32 DefenseModifier = BaseDefence;
+	float DefenseModifier = BaseDefence;
+	DefenseModifier += (CharAttribute->Dexterity * 0.05f);
+	DefenseModifier += (CharAttribute->Agility * 0.04f);
 
 	if (Helm)
 		DefenseModifier += Helm->Defense;
@@ -196,7 +200,42 @@ void AP_Character::RecalculateDefence() {
 		DefenseModifier += Boots->Defense;
 
 	if (Shield)
+	{
 		DefenseModifier += Shield->Defense;
+		DefenseModifier += (CharAttribute->GetSkillValue(ECharacterSkill::ShieldSkill) * 0.3f);		
+	}
+		
+	for (const auto& elem : ActiveStatusEffects)
+	{
+		if (elem.EffectType == EStatusEffectType::Poison)
+		{
+			DefenseModifier -= 2;
+		}
+		if (elem.EffectType == EStatusEffectType::Stun)
+		{
+			DefenseModifier -= 5;
+		}
+		if (elem.EffectType == EStatusEffectType::Blind)
+		{
+			DefenseModifier -= 4;
+		}
+		if (elem.EffectType == EStatusEffectType::Malaise)
+		{
+			DefenseModifier -= 1;
+		}
+		if (elem.EffectType == EStatusEffectType::Irritation)
+		{
+			DefenseModifier -= 2;
+		}
+		if (elem.EffectType == EStatusEffectType::Paralysis)
+		{
+			DefenseModifier -= 5;
+		}
+		if (elem.EffectType == EStatusEffectType::Slowdown)
+		{
+			DefenseModifier -= 3;
+		}
+	}
 
 	CurrentDefence = DefenseModifier;
 
@@ -204,6 +243,243 @@ void AP_Character::RecalculateDefence() {
 	{
 		EquipStatsChanged.Broadcast();
 	}
+}
+
+void AP_Character::RecalculateAttack()
+{
+
+	float AttackModifier = BaseAttack;
+	float SecondAttackModifier = BaseAttack;
+	float DualWieldPenalty = 0.0f;
+	float RangedAttackModifier = BaseRangedAttack;
+	float ThrowingAttackModifier = BaseThrowingAttack;
+
+	AttackModifier += (CharAttribute->Dexterity * 0.1f);
+	AttackModifier += (CharAttribute->Strength * 0.1f);
+	AttackModifier += (CharacterLevel * 0.5f);
+	AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::CloseCombatSkill) * 0.5f);
+
+	RangedAttackModifier += (CharAttribute->Dexterity * 0.1f);
+	RangedAttackModifier += (CharAttribute->Strength * 0.1f);
+	RangedAttackModifier += (CharacterLevel * 0.5f);
+	RangedAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::RangedCombatSkill) * 0.5f);
+
+	ThrowingAttackModifier += (CharAttribute->Dexterity * 0.1f);
+	ThrowingAttackModifier += (CharAttribute->Strength * 0.1f);
+	ThrowingAttackModifier += (CharacterLevel * 0.5f);
+	ThrowingAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::RangedCombatSkill) * 0.5f);
+
+	if (MeleeWeapon)
+	{
+		switch (MeleeWeapon->WeaponType)
+		{
+		case EWeaponType::Hand:
+			AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::UnarmedSkill) * 0.5f);
+			break;
+		case EWeaponType::Sword:
+			AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::SwordSkill) * 0.5f);
+			break;
+		case EWeaponType::Axe:
+			AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::AxeSkill) * 0.5f);
+			break;
+		case EWeaponType::Mace:
+			AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::BluntSkill) * 0.5f);
+			break;
+		case EWeaponType::Spear:
+			AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::PolearmsSkill) * 0.5f);
+			break;
+		case EWeaponType::Dagger:
+			AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::DaggerSkill) * 0.5f);
+			break;
+		case EWeaponType::Staff:
+			AttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::StaffSkill) * 0.5f);
+			break;
+		default:
+			break;
+		}
+
+		AttackModifier += MeleeWeapon->AttackBonus;
+	}
+
+	if (SecondMeleeWeapon)
+	{
+		DualWieldPenalty = FMath::Max(0.0f, -30.0f + (CharAttribute->GetSkillValue(ECharacterSkill::DualWeaponsSkill) * 0.3f));
+		AttackModifier += DualWieldPenalty;
+		SecondAttackModifier += DualWieldPenalty;
+
+		switch (SecondMeleeWeapon->WeaponType)
+		{
+		case EWeaponType::Hand:
+			SecondAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::UnarmedSkill) * 0.5f);
+			break;
+		case EWeaponType::Sword:
+			SecondAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::SwordSkill) * 0.5f);
+			break;
+		case EWeaponType::Axe:
+			SecondAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::AxeSkill) * 0.5f);
+			break;
+		case EWeaponType::Mace:
+			SecondAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::BluntSkill) * 0.5f);
+			break;
+		case EWeaponType::Spear:
+			SecondAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::PolearmsSkill) * 0.5f);
+			break;
+		case EWeaponType::Dagger:
+			SecondAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::DaggerSkill) * 0.5f);
+			break;
+		case EWeaponType::Staff:
+			SecondAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::StaffSkill) * 0.5f);
+			break;
+		default:
+			break;
+		}
+
+		SecondAttackModifier += SecondMeleeWeapon->AttackBonus;
+	}
+
+	if (RangedWeapon && Quiver)
+	{
+		RangedAttackModifier += RangedWeapon->AttackBonus;
+		RangedAttackModifier += Quiver->AttackBonus;
+
+		switch (RangedWeapon->WeaponType)
+		{
+		case EWeaponType::Bow:
+			RangedAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::BowSkill) * 0.5f);
+			break;
+		case EWeaponType::Crossbow:
+			RangedAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::CrossbowSkill) * 0.5f);
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (ThrowingWeapon)
+	{
+		ThrowingAttackModifier += ThrowingWeapon->AttackBonus;
+
+		switch (ThrowingWeapon->WeaponType)
+		{
+		case EWeaponType::Throwing:
+			ThrowingAttackModifier += (CharAttribute->GetSkillValue(ECharacterSkill::ThrowingSkill) * 0.5f);
+			break;
+		default:
+			break;
+		}
+	}
+
+	for (const auto& elem : ActiveStatusEffects)
+	{
+		if (elem.EffectType == EStatusEffectType::Poison)
+		{
+			AttackModifier -= 2;
+			SecondAttackModifier -= 2;
+			RangedAttackModifier -= 2;
+			ThrowingAttackModifier -= 2;
+		}
+		if (elem.EffectType == EStatusEffectType::Blind)
+		{
+			AttackModifier -= 10;
+			SecondAttackModifier -= 10;
+			RangedAttackModifier -= 10;
+			ThrowingAttackModifier -= 10;
+		}
+		if (elem.EffectType == EStatusEffectType::Malaise)
+		{
+			AttackModifier -= 1;
+			SecondAttackModifier -= 1;
+			RangedAttackModifier -= 1;
+			ThrowingAttackModifier -= 1;
+		}
+		if (elem.EffectType == EStatusEffectType::Irritation)
+		{
+			AttackModifier -= 2;
+			SecondAttackModifier -= 2;
+			RangedAttackModifier -= 2;
+			ThrowingAttackModifier -= 2;
+		}
+		if (elem.EffectType == EStatusEffectType::Slowdown)
+		{
+			AttackModifier -= 3;
+			SecondAttackModifier -= 3;
+			RangedAttackModifier -= 3;
+			ThrowingAttackModifier -= 3;
+		}
+	}
+
+	CurrentAttack = AttackModifier;
+	CurrentSecondWeaponAttack = SecondAttackModifier;
+	CurrentRangeAttack = RangedAttackModifier;
+	CurrentThrowAttack = ThrowingAttackModifier;
+	
+}
+
+void AP_Character::RecalculateInitiative() 
+{
+	float InitiativeModifier = Initiative;
+	float WeaponModifier = 0.0f;
+
+	InitiativeModifier += (CharAttribute->Agility * 0.2f);
+	InitiativeModifier += (CharAttribute->Perception * 0.1f);
+	InitiativeModifier += (CharacterLevel * 0.5f);
+
+	if (PlayerActionTypeInd == 1)
+	{
+		if (MeleeWeapon)
+		{
+			WeaponModifier = MeleeWeapon->InitiativeBonus;
+		}
+
+		if (SecondMeleeWeapon)
+		{
+			WeaponModifier = (MeleeWeapon->InitiativeBonus + SecondMeleeWeapon->InitiativeBonus) / 2;
+		}
+
+		InitiativeModifier += WeaponModifier;
+	}
+
+	if (PlayerActionTypeInd == 2)
+	{
+		if (RangedWeapon)
+		{
+			WeaponModifier = RangedWeapon->InitiativeBonus;
+		}
+
+		InitiativeModifier += WeaponModifier;
+	}
+
+	if (PlayerActionTypeInd == 4)
+	{
+		if (RangedWeapon)
+		{
+			WeaponModifier = ThrowingWeapon->InitiativeBonus;
+		}
+
+		InitiativeModifier += WeaponModifier;
+	}
+
+	for (const auto& elem : ActiveStatusEffects)
+	{
+		if (elem.EffectType == EStatusEffectType::Poison)
+		{
+			InitiativeModifier -= 2;
+		}
+		if (elem.EffectType == EStatusEffectType::Blind)
+		{
+			InitiativeModifier -= 2;
+		}
+		if (elem.EffectType == EStatusEffectType::Malaise)
+		{
+			InitiativeModifier -= 3;
+		}		
+		if (elem.EffectType == EStatusEffectType::Slowdown)
+		{
+			InitiativeModifier -= 10;
+		}
+	}
+
+	CurrentInitiative = InitiativeModifier;
 }
 
 
@@ -279,4 +555,11 @@ void AP_Character::SubtractThrowingWeapon()
 	{
 		ThrowingWeaponDecreased.Broadcast();
 	}
+}
+
+void AP_Character::Update—ombatQualities() 
+{
+	RecalculateAttack();
+	RecalculateDefence();
+	RecalculateInitiative();
 }

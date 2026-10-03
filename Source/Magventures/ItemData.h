@@ -81,6 +81,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Requirements")
 	int32 RequiredForce = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Initiative")
+	int32 InitiativeBonus = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	int32 AttackBonus = 0;
 };
 
 UCLASS(BlueprintType)
@@ -99,6 +105,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	EWeaponType AmmunitionFor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	int32 AttackBonus = 0;
 };
 
 UCLASS(BlueprintType)

@@ -1110,6 +1110,7 @@ void UBattleSystem::ExecuteNextFighterTurn()
 
 				if (elem->WType == 'P')
 				{
+					elem->PlayerPawn->UpdateСombatQualities();
 					elem->PlayerPawn->AlreadyMove = true;
 					elem->AlMov = true;
 					PlayerTurn(elem->PlayerPawn);

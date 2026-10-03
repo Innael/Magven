@@ -46,6 +46,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	AP_Character* CurrentTarget;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
+	TArray<FActiveStatusEffect> ActiveStatusEffects;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Class")
 	bool ArcherClass = false;
 

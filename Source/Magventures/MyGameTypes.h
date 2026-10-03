@@ -79,7 +79,7 @@ enum class ECharacterSkill : uint8
 {
 	CloseCombatSkill UMETA(DisplayName = "Ближний бой", Category = "General"),
 	RangedCombatSkill UMETA(DisplayName = "Дальний бой", Category = "General"),
-	DualWeaponSkill UMETA(DisplayName = "Двойное оружие", Category = "General"),
+	DualWeaponsSkill UMETA(DisplayName = "Двойное оружие", Category = "General"),
 	ArtifactsKnowledge UMETA(DisplayName = "Знание артефактов", Category = "General"),
 
 	SwordSkill UMETA(DisplayName = "Меч", Category = "Weapon"),
@@ -90,8 +90,9 @@ enum class ECharacterSkill : uint8
 	StaffSkill UMETA(DisplayName = "Посохи", Category = "Weapon"),
 	ShieldSkill UMETA(DisplayName = "Щит", Category = "Weapon"),
 	BowSkill UMETA(DisplayName = "Лук", Category = "Weapon"),
-	CrossBowSkill UMETA(DisplayName = "Арбалет", Category = "Weapon"),
+	CrossbowSkill UMETA(DisplayName = "Арбалет", Category = "Weapon"),
 	ThrowingSkill UMETA(DisplayName = "Метательное", Category = "Weapon"),
+	UnarmedSkill UMETA(DisplayName = "Бой без оружия", Category = "Weapon"),
 
 	ControlOverPower UMETA(DisplayName = "Контроль силы", Category = "Magic"),
 	FireMagicSkill UMETA(DisplayName = "Магия огня", Category = "Magic"),
@@ -130,4 +131,58 @@ enum class EAllySpellEffectType : uint8
 	Buff UMETA(DisplayName = "Позитивный эффект"),
 	ManaRegen UMETA(DisplayName = "Восстановление маны"),
 	Resurrection UMETA(DisplayName = "Воскрешение")
+};
+
+UENUM(BlueprintType)
+enum class EStatusEffectType : uint8
+{
+	Poison UMETA(DisplayName = "Яд"),
+	Stun UMETA(DisplayName = "Оглушение"),
+	Blind UMETA(DisplayName = "Слепота"),
+	Bleed UMETA(DisplayName = "Кровотечение"),
+	Regeneration UMETA(DisplayName = "Регенерация"),
+	Malaise UMETA(DisplayName = "Недомогание"),
+	Irritation UMETA(DisplayName = "Раздражение"),
+	Paralysis UMETA(DisplayName = "Паралич"),
+	Slowdown UMETA(DisplayName = "Замедление")
+};
+
+USTRUCT(BlueprintType)
+struct FActiveStatusEffect
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	EStatusEffectType EffectType;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 RemainingDuration; // Оставшиеся раунды
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 Power; // Сила эффекта (например, сколько ХП отнимает за тик)
+
+	UPROPERTY(BlueprintReadWrite)
+	AP_Character* Caster; // Кто наложил эффект (важно для расчета опыта или логов)
+};
+
+USTRUCT(BlueprintType)
+struct FSpellStatusEffectChance
+{
+	GENERATED_BODY()
+
+	/** Какой статус-эффект пытаемся наложить */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Effect")
+	EStatusEffectType EffectType;
+
+	/** Базовый шанс наложения в процентах (от 0 до 100) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Effect", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float ApplicationChance;
+
+	/** Базовая длительность эффекта в раундах */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Effect", meta = (ClampMin = "1"))
+	int32 BaseDuration;
+
+	/** Базовая мощность эффекта (урон за тик или сила дебаффа) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Effect")
+	int32 BasePower;
 };

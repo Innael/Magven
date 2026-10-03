@@ -66,6 +66,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
 	FRotator PlannedSectorDirection;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
+	TArray<FActiveStatusEffect> ActiveStatusEffects;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UWeaponData* MeleeWeapon = nullptr;
 
@@ -102,6 +105,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
 	int32 PlannedSpellPowerLevel = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level")
+	int32 CharacterLevel = 1;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Name")
 	FString Name;
 
@@ -133,7 +139,19 @@ public:
 	int32 BaseDefence = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseAttack = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseRangedAttack = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseThrowingAttack = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentSecondWeaponAttack = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammunition")
 	int32 AmmunitionCount = 0;
@@ -267,6 +285,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Mana")
 	void ChangeMana(float NewMana);
 
+	
+	UFUNCTION(BlueprintCallable, Category = "—ombat Qualities")
+	void Update—ombatQualities();
+
 	UFUNCTION(BlueprintCallable)
 	bool CheckCanShoot();
 
@@ -278,6 +300,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Defence")
 	void RecalculateDefence();
+
+	UFUNCTION(BlueprintCallable, Category = "Defence")
+	void RecalculateAttack();
+
+	UFUNCTION(BlueprintCallable, Category = "Initiative")
+	void RecalculateInitiative();
 
 	UFUNCTION(BlueprintCallable, Category = "Weight")
 	void RecalculateWeight(float PersonalInventoryWeight, float ShrdWeight);
