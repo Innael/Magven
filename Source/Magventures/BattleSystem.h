@@ -135,6 +135,14 @@ class MAGVENTURES_API UBattleSystem : public UObject
 	UFUNCTION(BlueprintCallable, Category = "Combat | Math")
 	int32 GetRandomCombatValue(int32 MaxValue);
 
+	/** ѕытаетс€ наложить эффекты заклинани€ игрока на противника */
+	UFUNCTION(BlueprintCallable, Category = "Combat | Status Effects")
+	void TryApplySpellEffectsToEnemy(const FSpellData& SpellData, int32 PowerLevel, ACHEnemyCharacter* TargetEnemy, AP_Character* Caster);
+
+	/** ѕытаетс€ наложить эффекты заклинани€ противника на персонажа игрока */
+	UFUNCTION(BlueprintCallable, Category = "Combat | Status Effects")
+	void TryApplySpellEffectsToPlayer(const FSpellData& SpellData, int32 PowerLevel, AP_Character* TargetPlayer, ACHEnemyCharacter* Caster);
+
 private:
 	UPROPERTY()
 	TArray<ACHEnemyCharacter*> FoundEnemies;

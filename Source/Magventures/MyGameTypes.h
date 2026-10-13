@@ -117,7 +117,9 @@ enum class ESpellProjectileType : uint8
 	Fireball UMETA(DisplayName = "Огненный шар"),
 	IceArrow UMETA(DisplayName = "Ледяная стрела"),
 	Lightning UMETA(DisplayName = "Молния"),
-	PoisonCloud UMETA(DisplayName = "Облако яда")
+	PoisonCloud UMETA(DisplayName = "Облако яда"),
+	FlameConus UMETA(DisplayName = "Огненный конус"),
+	GlassConus UMETA(DisplayName = "Конус стеклянной пыли")
 	// Сюда вы сможете дописывать любые новые типы визуальных снарядов
 };
 
@@ -144,7 +146,24 @@ enum class EStatusEffectType : uint8
 	Malaise UMETA(DisplayName = "Недомогание"),
 	Irritation UMETA(DisplayName = "Раздражение"),
 	Paralysis UMETA(DisplayName = "Паралич"),
-	Slowdown UMETA(DisplayName = "Замедление")
+	Slowdown UMETA(DisplayName = "Замедление"),
+	Fatigue UMETA(DisplayName = "Усталость"),
+	Sleep UMETA(DisplayName = "Сон")
+};
+
+UENUM(BlueprintType)
+enum class EDamageType : uint8
+{
+	Physical UMETA(DisplayName = "Физический"),
+	Fire UMETA(DisplayName = "Огонь"),
+	Cold UMETA(DisplayName = "Холод"),
+	Electricity UMETA(DisplayName = "Электричество"),
+	Light UMETA(DisplayName = "Свет"),
+	Poison UMETA(DisplayName = "Яд"),
+	Chemical UMETA(DisplayName = "Химический"),
+	Mental UMETA(DisplayName = "Ментальный"),
+	Death UMETA(DisplayName = "Смерть"),
+	Magic UMETA(DisplayName = "Магический")
 };
 
 USTRUCT(BlueprintType)
@@ -162,7 +181,7 @@ struct FActiveStatusEffect
 	int32 Power; // Сила эффекта (например, сколько ХП отнимает за тик)
 
 	UPROPERTY(BlueprintReadWrite)
-	AP_Character* Caster; // Кто наложил эффект (важно для расчета опыта или логов)
+	AActor* Caster; // Кто наложил эффект (важно для расчета опыта или логов)
 };
 
 USTRUCT(BlueprintType)
@@ -185,4 +204,76 @@ struct FSpellStatusEffectChance
 	/** Базовая мощность эффекта (урон за тик или сила дебаффа) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Effect")
 	int32 BasePower;
+};
+
+USTRUCT(BlueprintType)
+struct FCombatResistances
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Physical = 0.0f; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Fire = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Cold = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Electricity = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Light = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Poison = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Chemical = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Mental = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Death = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistances", meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Magic = 0.0f;
+};
+
+USTRUCT(BlueprintType)
+struct FCombatImmunity
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Poison = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Stun = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity" )
+	bool Blind = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Bleed = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Malaise = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Irritation = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Paralysis = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Slowdown = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Fatigue = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status Immunity")
+	bool Sleep = false;
 };

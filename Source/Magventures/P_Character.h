@@ -69,6 +69,15 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
 	TArray<FActiveStatusEffect> ActiveStatusEffects;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes | Base")
+	FCombatResistances BaseResistances;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes | Current")
+	FCombatResistances CurrentResistances;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Immunity")
+	FCombatImmunity StatusImmunity;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UWeaponData* MeleeWeapon = nullptr;
 
@@ -284,10 +293,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Mana")
 	void ChangeMana(float NewMana);
-
 	
 	UFUNCTION(BlueprintCallable, Category = "—ombat Qualities")
-	void Update—ombatQualities();
+	void UpdateCombatQualities();
 
 	UFUNCTION(BlueprintCallable)
 	bool CheckCanShoot();

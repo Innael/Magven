@@ -235,6 +235,14 @@ void AP_Character::RecalculateDefence() {
 		{
 			DefenseModifier -= 3;
 		}
+		if (elem.EffectType == EStatusEffectType::Fatigue)
+		{
+			DefenseModifier -= 2;
+		}
+		if (elem.EffectType == EStatusEffectType::Sleep)
+		{
+			DefenseModifier -= 4;
+		}
 	}
 
 	CurrentDefence = DefenseModifier;
@@ -406,6 +414,13 @@ void AP_Character::RecalculateAttack()
 			RangedAttackModifier -= 3;
 			ThrowingAttackModifier -= 3;
 		}
+		if (elem.EffectType == EStatusEffectType::Fatigue)
+		{
+			AttackModifier -= 2;
+			SecondAttackModifier -= 2;
+			RangedAttackModifier -= 2;
+			ThrowingAttackModifier -= 2;
+		}
 	}
 
 	CurrentAttack = AttackModifier;
@@ -476,6 +491,10 @@ void AP_Character::RecalculateInitiative()
 		if (elem.EffectType == EStatusEffectType::Slowdown)
 		{
 			InitiativeModifier -= 10;
+		}
+		if (elem.EffectType == EStatusEffectType::Fatigue)
+		{
+			InitiativeModifier -= 2;
 		}
 	}
 
@@ -557,7 +576,7 @@ void AP_Character::SubtractThrowingWeapon()
 	}
 }
 
-void AP_Character::Update—ombatQualities() 
+void AP_Character::UpdateCombatQualities() 
 {
 	RecalculateAttack();
 	RecalculateDefence();

@@ -1100,7 +1100,7 @@ void UBattleSystem::ExecuteNextFighterTurn()
 					elem->EnemyCharacter->AlreadyMove = true;
 					elem->AlMov = true;
 					if (elem->EnemyCharacter->CanAct)					{
-						
+						elem->EnemyCharacter->UpdateCombatQualities();						
 						HUD->BP_RotateCameraToActor(elem->EnemyCharacter);
 						EnemyTurn(elem->EnemyCharacter);
 						break;
@@ -1110,7 +1110,7 @@ void UBattleSystem::ExecuteNextFighterTurn()
 
 				if (elem->WType == 'P')
 				{
-					elem->PlayerPawn->UpdateСombatQualities();
+					elem->PlayerPawn->UpdateCombatQualities();
 					elem->PlayerPawn->AlreadyMove = true;
 					elem->AlMov = true;
 					PlayerTurn(elem->PlayerPawn);
@@ -1732,7 +1732,7 @@ void UBattleSystem::PlayerAttack(ACHEnemyCharacter* Enemy, AP_Character* Charact
 	else
 	{
 		int32 CurrentDamage = FMath::RandRange(Character->CurrentMinDamage, Character->CurrentMaxDamage);
-		Enemy->ChangeHealth(-CurrentDamage);
+		CurrentDamage = Enemy->TakeDamage(CurrentDamage, EDamageType::Physical, Character);
 		Enemy->ChangeStamina(-ReciveAttackStaminaCost);
 		HUD->BtLog(WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(CurrentDamage) + AttackResDammage);
 	}
@@ -1778,7 +1778,7 @@ void UBattleSystem::PlayerSecondWeaponAttack(ACHEnemyCharacter* Enemy, AP_Charac
 	else
 	{
 		int32 CurrentDamage = FMath::RandRange(Character->CurrentMinSWDamage, Character->CurrentMaxSWDamage);
-		Enemy->ChangeHealth(-CurrentDamage);
+		CurrentDamage = Enemy->TakeDamage(CurrentDamage, EDamageType::Physical, Character);
 		Enemy->ChangeStamina(-ReciveAttackStaminaCost);
 		HUD->BtLog(WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(CurrentDamage) + AttackResDammage);
 	}
@@ -1859,7 +1859,7 @@ void UBattleSystem::PlayerShotEnd(AP_Character* Character, int32 ShotResult) {
 	else
 	{
 		int32 CurrentRangeDamage = FMath ::RandRange(Character->CurrentMinRangeDamage, Character->CurrentMaxRangeDamage);
-		Character->ChosenEnemy->ChangeHealth(-CurrentRangeDamage);
+		CurrentRangeDamage = Character->ChosenEnemy->TakeDamage(CurrentRangeDamage, EDamageType::Physical, Character);
 		Character->ChosenEnemy->ChangeStamina(-ReciveAttackStaminaCost);
 		HUD->BtLog(
 			WrappedString2 + tempStr + WrappedString1 + AttackResHit + FString::FromInt(CurrentRangeDamage) + AttackResDammage);
@@ -1902,7 +1902,7 @@ void UBattleSystem::PlayerThrowEnd(AP_Character* Character, int32 ShotResult)
 	else
 	{
 		int32 CurrentThrowDamage = FMath ::RandRange(Character->CurrentMinThrowDamage, Character->CurrentMaxThrowDamage);
-		Character->ChosenEnemy->ChangeHealth(-CurrentThrowDamage);
+		CurrentThrowDamage = Character->ChosenEnemy->TakeDamage(CurrentThrowDamage, EDamageType::Physical, Character);
 		Character->ChosenEnemy->ChangeStamina(-ReciveAttackStaminaCost);
 
         FString FullLog = FString::Printf(TEXT("%s метает %s во врага по имени %s и наносит %d урона."), *WrappedString2, *WeaponName, *WrappedString1, CurrentThrowDamage);
@@ -1984,7 +1984,7 @@ void UBattleSystem::PlayerMagicCastEnd(AP_Character* Character, int32 CastResult
 
 				WrappedString1 = FormatLogName(DamagedCharacter->Name, DamagedCharacter->Position);
 
-				FString FullLog = FString::Printf(TEXT("%s плетёт %s , но ошибается и заклиние бьёт в члена отряда по имени %s и наносит %d урона."), *WrappedString2, *CastName,
+				FString FullLog = FString::Printf(TEXT("%s плетёт %s , но ошибается, и заклинание бьёт в члена отряда, по имени %s и наносит %d урона."), *WrappedString2, *CastName,
 					*WrappedString1, CurrentMagicDamage);
 
 				HUD->BtLog(FullLog);
@@ -2006,13 +2006,23 @@ void UBattleSystem::PlayerMagicCastEnd(AP_Character* Character, int32 CastResult
 			int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
 			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
 
-			Character->ChosenEnemy->ChangeHealth(-CurrentMagicDamage);
-			Character->ChosenEnemy->ChangeStamina(-ReciveAttackStaminaCost);
+			if (CurrentMagicDamage > 0)
+			{
+				CurrentMagicDamage =
+					Character->ChosenEnemy->TakeDamage(CurrentMagicDamage, Character->PlannedSpellData.SpellDamageType, Character);
+				Character->ChosenEnemy->ChangeStamina(-ReciveAttackStaminaCost);
 
-			FString FullLog = FString::Printf(TEXT("%s плетёт %s во врага по имени %s и наносит %d урона."), *WrappedString2, *CastName,
-				*WrappedString1, CurrentMagicDamage);
+				FString FullLog = FString::Printf(TEXT("%s плетёт %s во врага по имени %s и наносит %d урона."), *WrappedString2, *CastName,
+					*WrappedString1, CurrentMagicDamage);
 
-			HUD->BtLog(FullLog);
+				HUD->BtLog(FullLog);
+			}
+
+			if (Character->PlannedSpellData.StatusEffectsToApply.Num() > 0)
+			{
+				TryApplySpellEffectsToEnemy(Character->PlannedSpellData, Character->PlannedSpellPowerLevel, Character->ChosenEnemy, Character);
+			}
+			
 		}
 		
 	}
@@ -2086,12 +2096,23 @@ void UBattleSystem::PlayerRadialMagicCastEnd(AP_Character* Character, int32 Cast
 					int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
 					int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
 					int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
-					elem->EnemyCharacter->ChangeHealth(-CurrentMagicDamage);
-					elem->EnemyCharacter->ChangeStamina(-ReciveAttackStaminaCost);
 
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
-					FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
-					HUD->BtLog(FullLog);
+					if (CurrentMagicDamage > 0)
+					{
+						CurrentMagicDamage =
+							elem->EnemyCharacter->TakeDamage(CurrentMagicDamage, Character->PlannedSpellData.SpellDamageType, Character);
+						elem->EnemyCharacter->ChangeStamina(-ReciveAttackStaminaCost);
+
+						FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+						FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+						HUD->BtLog(FullLog);
+					}								
+
+					if (Character->PlannedSpellData.StatusEffectsToApply.Num() > 0)
+					{
+						TryApplySpellEffectsToEnemy(
+							Character->PlannedSpellData, Character->PlannedSpellPowerLevel, elem->EnemyCharacter, Character);
+					}
 				}
 			}
 		}
@@ -2180,12 +2201,23 @@ void UBattleSystem::PlayerSectorMagicCastEnd(AP_Character* Character, int32 Cast
 						int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
 						int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
 						int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
-						elem->EnemyCharacter->ChangeHealth(-CurrentMagicDamage);
-						elem->EnemyCharacter->ChangeStamina(-ReciveAttackStaminaCost);
 
-						FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
-						FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
-						HUD->BtLog(FullLog);
+						if (CurrentMagicDamage > 0)
+						{
+							CurrentMagicDamage = elem->EnemyCharacter->TakeDamage(
+								CurrentMagicDamage, Character->PlannedSpellData.SpellDamageType, Character);
+							elem->EnemyCharacter->ChangeStamina(-ReciveAttackStaminaCost);
+
+							FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+							FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+							HUD->BtLog(FullLog);
+						}						
+
+						if (Character->PlannedSpellData.StatusEffectsToApply.Num() > 0)
+						{
+							TryApplySpellEffectsToEnemy(
+								Character->PlannedSpellData, Character->PlannedSpellPowerLevel, elem->EnemyCharacter, Character);
+						}
 					}					
 				}
 			}
@@ -2249,12 +2281,22 @@ void UBattleSystem::PlayerGroupMagicCastEnd(const TArray<ACHEnemyCharacter*>& Ta
 			int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
 			int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
 			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
-			elem->ChangeHealth(-CurrentMagicDamage);
-			elem->ChangeStamina(-ReciveAttackStaminaCost);
 
-			FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->Name);
-			FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
-			HUD->BtLog(FullLog);
+			if (CurrentMagicDamage > 0)
+			{
+				CurrentMagicDamage = elem->TakeDamage(CurrentMagicDamage, Character->PlannedSpellData.SpellDamageType, Character);
+				elem->ChangeStamina(-ReciveAttackStaminaCost);
+
+				FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->Name);
+				FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+				HUD->BtLog(FullLog);
+			}			
+
+			if (Character->PlannedSpellData.StatusEffectsToApply.Num() > 0)
+			{
+				TryApplySpellEffectsToEnemy(
+					Character->PlannedSpellData, Character->PlannedSpellPowerLevel, elem, Character);
+			}
 		}
 	}
 
@@ -2314,12 +2356,22 @@ void UBattleSystem::PlayerAllEnemiesMagicCastEnd(const TArray<ACHEnemyCharacter*
 			int32 MinMagicDamage = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
 			int32 MaxMagicDamage = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
 			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
-			elem->ChangeHealth(-CurrentMagicDamage);
-			elem->ChangeStamina(-ReciveAttackStaminaCost);
 
-			FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->Name);
-			FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
-			HUD->BtLog(FullLog);
+			if (CurrentMagicDamage > 0)
+			{
+				CurrentMagicDamage = elem->TakeDamage(CurrentMagicDamage, Character->PlannedSpellData.SpellDamageType, Character);
+				elem->ChangeStamina(-ReciveAttackStaminaCost);
+
+				FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->Name);
+				FullLog = FString::Printf(TEXT("%s получает %d урона."), *WrappedString1, CurrentMagicDamage);
+				HUD->BtLog(FullLog);
+			}
+			
+
+			if (Character->PlannedSpellData.StatusEffectsToApply.Num() > 0)
+			{
+				TryApplySpellEffectsToEnemy(Character->PlannedSpellData, Character->PlannedSpellPowerLevel, elem, Character);
+			}
 		}
 	}
 
@@ -2425,3 +2477,224 @@ void UBattleSystem::PlayerAllAllyMagicCastEnd(AP_Character* Character, int32 Cas
 
 	NextFighterTurn();
 }
+
+void UBattleSystem::TryApplySpellEffectsToEnemy(
+	const FSpellData& SpellData, int32 PowerLevel, ACHEnemyCharacter* TargetEnemy, AP_Character* Caster)
+{
+	if (!TargetEnemy || !TargetEnemy->Live || !Caster)
+		return;
+	if (SpellData.StatusEffectsToApply.Num() == 0)
+		return;
+
+	float ElementResistance = 0.0f;
+	float MagicResistance = TargetEnemy->CurrentResistances.Magic;
+
+	switch (SpellData.SpellDamageType)
+	{
+	case EDamageType::Physical:
+		ElementResistance = TargetEnemy->CurrentResistances.Physical;
+		break;
+	case EDamageType::Fire:
+		ElementResistance = TargetEnemy->CurrentResistances.Fire;
+		break;
+	case EDamageType::Cold:
+		ElementResistance = TargetEnemy->CurrentResistances.Cold;
+		break;
+	case EDamageType::Electricity:
+		ElementResistance = TargetEnemy->CurrentResistances.Electricity;
+		break;
+	case EDamageType::Light:
+		ElementResistance = TargetEnemy->CurrentResistances.Light;
+		break;
+	case EDamageType::Poison:
+		ElementResistance = TargetEnemy->CurrentResistances.Poison;
+		break;
+	case EDamageType::Chemical:
+		ElementResistance = TargetEnemy->CurrentResistances.Chemical;
+		break;
+	case EDamageType::Mental:
+		ElementResistance = TargetEnemy->CurrentResistances.Mental;
+		break;
+	case EDamageType::Magic:
+		ElementResistance = MagicResistance;
+		break;
+	case EDamageType::Death:
+		ElementResistance = TargetEnemy->CurrentResistances.Death;
+		break;
+	}
+
+	for (const FSpellStatusEffectChance& EffectChance : SpellData.StatusEffectsToApply)
+	{
+
+		bool bIsImmune = false;
+
+		switch (EffectChance.EffectType)
+		{
+		case EStatusEffectType::Poison:
+			bIsImmune = TargetEnemy->StatusImmunity.Poison;
+			break;
+		case EStatusEffectType::Stun:
+			bIsImmune = TargetEnemy->StatusImmunity.Stun;
+			break;
+		case EStatusEffectType::Blind:
+			bIsImmune = TargetEnemy->StatusImmunity.Blind;
+			break;
+		case EStatusEffectType::Bleed:
+			bIsImmune = TargetEnemy->StatusImmunity.Bleed;
+			break;
+		case EStatusEffectType::Malaise:
+			bIsImmune = TargetEnemy->StatusImmunity.Malaise;
+			break;
+		case EStatusEffectType::Irritation:
+			bIsImmune = TargetEnemy->StatusImmunity.Irritation;
+			break;
+		case EStatusEffectType::Paralysis:
+			bIsImmune = TargetEnemy->StatusImmunity.Paralysis;
+			break;
+		case EStatusEffectType::Slowdown:
+			bIsImmune = TargetEnemy->StatusImmunity.Slowdown;
+			break;
+		case EStatusEffectType::Fatigue:
+			bIsImmune = TargetEnemy->StatusImmunity.Fatigue;
+			break;
+		case EStatusEffectType::Sleep:
+			bIsImmune = TargetEnemy->StatusImmunity.Sleep;
+			break;
+		}
+
+		// Если у цели есть иммунитет к этому эффекту — мгновенно прерываем текущую итерацию
+		// и переходим к следующему эффекту в заклинании, полностью игнорируя кубики и резисты!
+		if (bIsImmune)
+		{
+			// Здесь при необходимости можно вывести в лог сообщение: "У врага иммунитет!"
+			continue;
+		}
+
+		float ModifiedChance = (EffectChance.ApplicationChance * PowerLevel);
+		ModifiedChance -= ElementResistance;
+		ModifiedChance -= MagicResistance;
+
+		float FinalChance = FMath::Max(1.0f, ModifiedChance);
+
+		if (FMath::RandRange(0.0f, 100.0f) <= FinalChance)
+		{
+			// Рассчитываем параметры нового потенциального эффекта
+			int32 NewPower = EffectChance.BasePower * PowerLevel;
+			int32 NewDuration = EffectChance.BaseDuration;
+
+			// Флаг, нашли ли мы уже существующий такой дебафф на враге
+			bool bEffectFound = false;
+
+			// 1. Проверяем массив активных эффектов цели на наличие дубликата
+			for (FActiveStatusEffect& ExistingEffect : TargetEnemy->ActiveStatusEffects)
+			{
+				if (ExistingEffect.EffectType == EffectChance.EffectType)
+				{
+					bEffectFound = true;
+
+					// Если НОВЫЙ эффект мощнее текущего — перезаписываем его силу и длительность
+					if (NewPower > ExistingEffect.Power)
+					{
+						ExistingEffect.Power = NewPower;
+						ExistingEffect.RemainingDuration = NewDuration;
+						ExistingEffect.Caster = Caster; // Меняем хозяина эффекта на более сильного мага
+						
+					}
+					else
+					{
+						// Если новый эффект СЛАБЕЕ или равен текущему — мы просто его игнорируем,
+						// оставляя старый сильный дебафф тикать дальше без изменений
+						// HUD->AddLogMessage("Более слабый эффект проигнорирован.");
+					}
+
+					break; // Нашли дубликат, выходим из внутреннего цикла проверки
+				}
+			}
+
+			// 2. Если такого эффекта на враге еще нет — спокойно добавляем его как новый
+			if (!bEffectFound)
+			{
+				FActiveStatusEffect NewEffect;
+				NewEffect.EffectType = EffectChance.EffectType;
+				NewEffect.Caster = Caster;
+				NewEffect.RemainingDuration = NewDuration;
+				NewEffect.Power = NewPower;
+
+				TargetEnemy->ActiveStatusEffects.Add(NewEffect);
+
+				if (NewEffect.EffectType == EStatusEffectType::Poison)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s отравлен(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Stun)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("Противник %s оглушён(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Bleed)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s ничего не видит!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Bleed)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s истекает кровью!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Malaise)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s чувствует сильное недомогание!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Irritation)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s чувствует сильное раздражение на коже!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Paralysis)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s парализован(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Slowdown)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s замедлен(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Sleep)
+				{
+					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+					FString FullLog = FString::Printf(TEXT("%s спит!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+				
+			}
+
+			// После любых манипуляций с дебаффами принудительно пересчитываем боевые характеристики
+			TargetEnemy->UpdateCombatQualities();
+		}
+	}
+}
+
+void UBattleSystem::TryApplySpellEffectsToPlayer(
+	const FSpellData& SpellData, int32 PowerLevel, AP_Character* TargetPlayer, ACHEnemyCharacter* Caster)
+{
+}
+	

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "MyGameTypes.h"
 #include "CHEnemyCharacter.generated.h"
 
 class UBehaviorTree;
@@ -48,6 +49,16 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
 	TArray<FActiveStatusEffect> ActiveStatusEffects;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes | Base")
+	FCombatResistances BaseResistances;
+
+	/** Текущие резисты с учетом наложенных баффов/дебаффов (именно они участвуют в формуле урона) */
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes | Current")
+	FCombatResistances CurrentResistances;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Immunity")
+	FCombatImmunity StatusImmunity;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Class")
 	bool ArcherClass = false;
@@ -98,7 +109,13 @@ public:
 	int32 CurrentInitiative = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseAttack = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseRangeAttack = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentRangeAttack = 0;
@@ -115,11 +132,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Range Damage")
 	float RangeDamageModifier = 1.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Range Damage")
+	float MaxRangeAttackDistance = 20000.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	float DamageVariation = 0.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
-	float CurrentDefence = 3;
+	int32 BaseDefence = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defence")
+	float CurrentDefence = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
 	float MaxStamina = 100;
@@ -146,5 +169,26 @@ public:
 	bool CanSeeTarget(AActor* Target);
 
 	float CalculateRandomizedDamage(float BaseDamage);
+
+	UFUNCTION(BlueprintCallable, Category = "Defence")
+	void RecalculateDefence();
+
+	UFUNCTION(BlueprintCallable, Category = "Defence")
+	void RecalculateAttack();
+
+	UFUNCTION(BlueprintCallable, Category = "Initiative")
+	void RecalculateInitiative();
+
+	UFUNCTION(BlueprintCallable, Category = "Сombat Qualities")
+	void UpdateCombatQualities();
+
+	UFUNCTION(BlueprintCallable, Category = "TickStatusEffects")
+	void TickStatusEffects();
+
+	UFUNCTION(BlueprintCallable, Category = "BattleLog")
+	void AppealToHUD(const FString& Entry);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	int32 TakeDamage(int32 RawDamage, EDamageType DamageType, AP_Character* Attacker);
 
 };

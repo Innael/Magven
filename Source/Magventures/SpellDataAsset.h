@@ -48,6 +48,9 @@ struct FSpellData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Effects")
 	TArray<FSpellStatusEffectChance> StatusEffectsToApply;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Stats")
+	EDamageType SpellDamageType = EDamageType::Magic;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Info")
 	FText SpellDescription; // Краткое описание эффекта заклинания
 
