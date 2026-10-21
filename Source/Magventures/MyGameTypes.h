@@ -132,7 +132,9 @@ enum class EAllySpellEffectType : uint8
 	CureNegative UMETA(DisplayName = "Снятие негативных эффектов"),
 	Buff UMETA(DisplayName = "Позитивный эффект"),
 	ManaRegen UMETA(DisplayName = "Восстановление маны"),
-	Resurrection UMETA(DisplayName = "Воскрешение")
+	Resurrection UMETA(DisplayName = "Воскрешение"),
+	BringToConsciousness UMETA(DisplayName = "Привести в сознание"),
+	CureParalysis UMETA(DisplayName = "Вылечить паралич")
 };
 
 UENUM(BlueprintType)

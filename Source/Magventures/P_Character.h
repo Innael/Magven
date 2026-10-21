@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "AttributeComponent.h"
+#include "UObject/NameTypes.h"
 #include "ItemData.h"
 #include "SpellDataAsset.h"
 #include "CHEnemyCharacter.h"
@@ -13,6 +14,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStaminaChanged, float, CurrentStamina);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealthChanged, float, CurrentHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FManaChanged, float, CurrentMana);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStatusChanged, int32, Position);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEquipStatsChanged);
 
 
@@ -42,6 +44,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FManaChanged ManaChangedToUI;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FStatusChanged DebaffStatusChangedToUI;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FEquipStatsChanged EquipStatsChanged;
@@ -268,6 +273,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initiative")
 	int32 CurrentInitiative = 5;
+	
+	FText GetStatusEffectDisplayName(EStatusEffectType EffectType);
 
 public:	
 	// Called every frame
@@ -326,6 +333,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ammunition")
 	void SubtractThrowingWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Healing")
+	void CureStatusEffect(EStatusEffectType EffectToCure, int32 CurePower, const FString& FormatedName);
+
+	void AppealToHUD(const FString& Entry);
 
 };
 

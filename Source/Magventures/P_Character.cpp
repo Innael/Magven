@@ -2,6 +2,7 @@
 
 
 #include "P_Character.h"
+#include "Magventure_HUD.h"
 
 // Sets default values
 AP_Character::AP_Character()
@@ -581,4 +582,70 @@ void AP_Character::UpdateCombatQualities()
 	RecalculateAttack();
 	RecalculateDefence();
 	RecalculateInitiative();
+
+	DebaffStatusChangedToUI.Broadcast(Position);
+}
+
+void AP_Character::CureStatusEffect(EStatusEffectType EffectToCure, int32 CurePower, const FString& FormatedName)
+{
+	// Пробегаемся по массиву активных эффектов с конца (чтобы безопасно удалять элементы)
+	for (int32 i = ActiveStatusEffects.Num() - 1; i >= 0; --i)
+	{
+		if (ActiveStatusEffects[i].EffectType == EffectToCure)
+		{
+			// Вычитаем силу лечения из силы дебаффа
+			ActiveStatusEffects[i].Power -= CurePower;
+
+			// Если сила эффекта упала до нуля или ниже — дебафф побежден!
+			if (ActiveStatusEffects[i].Power <= 0)
+			{
+				FText EffectName = GetStatusEffectDisplayName(ActiveStatusEffects[i].EffectType);
+				FString FullLog = FString::Printf(TEXT("%s - эффект %s, снят."), *FormatedName, *EffectName.ToString());
+				ActiveStatusEffects.RemoveAt(i);
+
+				AppealToHUD(FullLog);
+			}
+			else
+			{
+				FText EffectName = GetStatusEffectDisplayName(ActiveStatusEffects[i].EffectType);
+				FString FullLog =
+					FString::Printf(TEXT("Эффект %s у %s, ослаблен, но продолжает действовать."), *EffectName.ToString(), *FormatedName);
+				ActiveStatusEffects.RemoveAt(i);
+
+				AppealToHUD(FullLog);
+			}
+		}
+	}
+}
+
+void AP_Character::AppealToHUD(const FString& Entry)
+{
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		if (AMagventure_HUD* CombatHUD = Cast<AMagventure_HUD>(PC->GetHUD()))
+		{
+			CombatHUD->BtLog(Entry);
+		}
+	}
+}
+
+FText AP_Character::GetStatusEffectDisplayName(EStatusEffectType EffectType)
+{
+	// 1. Находим объект рефлексии нашего перечисления по его точному C++ имени
+	const UEnum* EnumPtr = StaticEnum<EStatusEffectType>();
+
+	if (EnumPtr)
+	{
+		// 2. Превращаем наш enum-элемент в обычное число (индекс строки)
+		int32 EnumIndex = EnumPtr->GetIndexByValue(static_cast<int64>(EffectType));
+
+		if (EnumIndex != INDEX_NONE)
+		{
+			// 3. Вытаскиваем красивое Display Name на текущем языке локализации игры!
+			return EnumPtr->GetDisplayNameTextByIndex(EnumIndex);
+		}
+	}
+
+	// Если что-то пошло не так, возвращаем пустой текст
+	return FText::GetEmpty();
 }

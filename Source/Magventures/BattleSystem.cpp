@@ -2423,6 +2423,34 @@ void UBattleSystem::PlayerSyngleAllyMagicCastEnd(AP_Character* Character, int32 
 			HUD->BtLog(FullLog);
 		}
 
+		if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::CureNegative)
+		{
+			FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+			Character->ChosenAlly->CureStatusEffect(
+				EStatusEffectType::Bleed, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+			Character->ChosenAlly->CureStatusEffect(
+				EStatusEffectType::Malaise, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+			Character->ChosenAlly->CureStatusEffect(
+				EStatusEffectType::Irritation, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+		}
+
+		if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::BringToConsciousness)
+		{
+			FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+			Character->ChosenAlly->CureStatusEffect(
+				EStatusEffectType::Stun, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+		}
+
+		if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::CureParalysis)
+		{
+			FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+			Character->ChosenAlly->CureStatusEffect(
+				EStatusEffectType::Paralysis, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+		}
+
 	}
 
 	NextFighterTurn();
@@ -2470,6 +2498,35 @@ void UBattleSystem::PlayerAllAllyMagicCastEnd(AP_Character* Character, int32 Cas
 					FullLog = FString::Printf(TEXT("%s восстанавливает %d здоровья."), *WrappedString1, CurrentMagicHeal);
 					HUD->BtLog(FullLog);
 				}
+
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::CureNegative)
+				{
+					FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+					Character->ChosenAlly->CureStatusEffect(
+						EStatusEffectType::Bleed, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+					Character->ChosenAlly->CureStatusEffect(EStatusEffectType::Malaise,
+						Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+					Character->ChosenAlly->CureStatusEffect(EStatusEffectType::Irritation,
+						Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+				}
+
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::BringToConsciousness)
+				{
+					FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+					Character->ChosenAlly->CureStatusEffect(
+						EStatusEffectType::Stun, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+				}
+
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::CureParalysis)
+				{
+					FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+					Character->ChosenAlly->CureStatusEffect(EStatusEffectType::Paralysis,
+						Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+				}
+
 			}
 		}
 		
@@ -2622,65 +2679,58 @@ void UBattleSystem::TryApplySpellEffectsToEnemy(
 
 				TargetEnemy->ActiveStatusEffects.Add(NewEffect);
 
+				FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+
 				if (NewEffect.EffectType == EStatusEffectType::Poison)
-				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+				{					
 					FString FullLog = FString::Printf(TEXT("%s отравлен(а)!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Stun)
-				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
+				{					
 					FString FullLog = FString::Printf(TEXT("Противник %s оглушён(а)!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Bleed)
 				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
 					FString FullLog = FString::Printf(TEXT("%s ничего не видит!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Bleed)
 				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
 					FString FullLog = FString::Printf(TEXT("%s истекает кровью!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Malaise)
 				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
 					FString FullLog = FString::Printf(TEXT("%s чувствует сильное недомогание!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Irritation)
 				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
 					FString FullLog = FString::Printf(TEXT("%s чувствует сильное раздражение на коже!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Paralysis)
 				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
 					FString FullLog = FString::Printf(TEXT("%s парализован(а)!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Slowdown)
 				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
 					FString FullLog = FString::Printf(TEXT("%s замедлен(а)!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
 
 				if (NewEffect.EffectType == EStatusEffectType::Sleep)
 				{
-					FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *TargetEnemy->Name);
 					FString FullLog = FString::Printf(TEXT("%s спит!"), *WrappedString1);
 					HUD->BtLog(FullLog);
 				}
@@ -2696,5 +2746,197 @@ void UBattleSystem::TryApplySpellEffectsToEnemy(
 void UBattleSystem::TryApplySpellEffectsToPlayer(
 	const FSpellData& SpellData, int32 PowerLevel, AP_Character* TargetPlayer, ACHEnemyCharacter* Caster)
 {
+	if (!TargetPlayer || !TargetPlayer->Live || !Caster)
+		return;
+	if (SpellData.StatusEffectsToApply.Num() == 0)
+		return;
+
+	float ElementResistance = 0.0f;
+	float MagicResistance = TargetPlayer->CurrentResistances.Magic;
+
+	switch (SpellData.SpellDamageType)
+	{
+	case EDamageType::Physical:
+		ElementResistance = TargetPlayer->CurrentResistances.Physical;
+		break;
+	case EDamageType::Fire:
+		ElementResistance = TargetPlayer->CurrentResistances.Fire;
+		break;
+	case EDamageType::Cold:
+		ElementResistance = TargetPlayer->CurrentResistances.Cold;
+		break;
+	case EDamageType::Electricity:
+		ElementResistance = TargetPlayer->CurrentResistances.Electricity;
+		break;
+	case EDamageType::Light:
+		ElementResistance = TargetPlayer->CurrentResistances.Light;
+		break;
+	case EDamageType::Poison:
+		ElementResistance = TargetPlayer->CurrentResistances.Poison;
+		break;
+	case EDamageType::Chemical:
+		ElementResistance = TargetPlayer->CurrentResistances.Chemical;
+		break;
+	case EDamageType::Mental:
+		ElementResistance = TargetPlayer->CurrentResistances.Mental;
+		break;
+	case EDamageType::Magic:
+		ElementResistance = MagicResistance;
+		break;
+	case EDamageType::Death:
+		ElementResistance = TargetPlayer->CurrentResistances.Death;
+		break;
+	}
+
+	for (const FSpellStatusEffectChance& EffectChance : SpellData.StatusEffectsToApply)
+	{
+
+		bool bIsImmune = false;
+
+		switch (EffectChance.EffectType)
+		{
+		case EStatusEffectType::Poison:
+			bIsImmune = TargetPlayer->StatusImmunity.Poison;
+			break;
+		case EStatusEffectType::Stun:
+			bIsImmune = TargetPlayer->StatusImmunity.Stun;
+			break;
+		case EStatusEffectType::Blind:
+			bIsImmune = TargetPlayer->StatusImmunity.Blind;
+			break;
+		case EStatusEffectType::Bleed:
+			bIsImmune = TargetPlayer->StatusImmunity.Bleed;
+			break;
+		case EStatusEffectType::Malaise:
+			bIsImmune = TargetPlayer->StatusImmunity.Malaise;
+			break;
+		case EStatusEffectType::Irritation:
+			bIsImmune = TargetPlayer->StatusImmunity.Irritation;
+			break;
+		case EStatusEffectType::Paralysis:
+			bIsImmune = TargetPlayer->StatusImmunity.Paralysis;
+			break;
+		case EStatusEffectType::Slowdown:
+			bIsImmune = TargetPlayer->StatusImmunity.Slowdown;
+			break;
+		case EStatusEffectType::Fatigue:
+			bIsImmune = TargetPlayer->StatusImmunity.Fatigue;
+			break;
+		case EStatusEffectType::Sleep:
+			bIsImmune = TargetPlayer->StatusImmunity.Sleep;
+			break;
+		}
+		
+		if (bIsImmune)
+		{			
+			continue;
+		}
+
+		float ModifiedChance = (EffectChance.ApplicationChance * PowerLevel);
+		ModifiedChance -= ElementResistance;
+		ModifiedChance -= MagicResistance;
+
+		float FinalChance = FMath::Max(1.0f, ModifiedChance);
+
+		if (FMath::RandRange(0.0f, 100.0f) <= FinalChance)
+		{			
+			int32 NewPower = EffectChance.BasePower * PowerLevel;
+			int32 NewDuration = EffectChance.BaseDuration;
+			
+			bool bEffectFound = false;
+
+			
+			for (FActiveStatusEffect& ExistingEffect : TargetPlayer->ActiveStatusEffects)
+			{
+				if (ExistingEffect.EffectType == EffectChance.EffectType)
+				{
+					bEffectFound = true;
+					
+					if (NewPower > ExistingEffect.Power)
+					{
+						ExistingEffect.Power = NewPower;
+						ExistingEffect.RemainingDuration = NewDuration;
+						ExistingEffect.Caster = Caster; 
+					}
+					else
+					{
+
+					}
+
+					break;
+				}
+			}
+			
+			if (!bEffectFound)
+			{
+				FActiveStatusEffect NewEffect;
+				NewEffect.EffectType = EffectChance.EffectType;
+				NewEffect.Caster = Caster;
+				NewEffect.RemainingDuration = NewDuration;
+				NewEffect.Power = NewPower;
+
+				TargetPlayer->ActiveStatusEffects.Add(NewEffect);
+
+				FString WrappedString1 = FormatLogName(TargetPlayer->Name, TargetPlayer->Position);
+
+				if (NewEffect.EffectType == EStatusEffectType::Poison)
+				{
+					FString FullLog = FString::Printf(TEXT("%s отравлен(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Stun)
+				{
+					FString FullLog = FString::Printf(TEXT("Противник %s оглушён(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Bleed)
+				{
+					
+					FString FullLog = FString::Printf(TEXT("%s ничего не видит!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Bleed)
+				{					
+					FString FullLog = FString::Printf(TEXT("%s истекает кровью!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Malaise)
+				{
+					FString FullLog = FString::Printf(TEXT("%s чувствует сильное недомогание!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Irritation)
+				{
+					FString FullLog = FString::Printf(TEXT("%s чувствует сильное раздражение на коже!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Paralysis)
+				{
+					FString FullLog = FString::Printf(TEXT("%s парализован(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Slowdown)
+				{
+					FString FullLog = FString::Printf(TEXT("%s замедлен(а)!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+
+				if (NewEffect.EffectType == EStatusEffectType::Sleep)
+				{
+					FString FullLog = FString::Printf(TEXT("%s спит!"), *WrappedString1);
+					HUD->BtLog(FullLog);
+				}
+			}
+
+			TargetPlayer->UpdateCombatQualities();
+		}
+	}
 }
 	
