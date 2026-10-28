@@ -339,6 +339,9 @@ public:
 
 	void AppealToHUD(const FString& Entry);
 
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	int32 TakeDamage(int32 RawDamage, EDamageType DamageType, ACHEnemyCharacter* Attacker);
+
 };
 
 

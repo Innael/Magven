@@ -211,6 +211,12 @@ protected:
 	void RangedCombat(ACHEnemyCharacter* Enemy);
 
 	UFUNCTION(BlueprintCallable)
+	void MagicCombat(ACHEnemyCharacter* Enemy, int32 SpellIndx);
+
+	UFUNCTION(BlueprintCallable)
+	void EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResult);
+
+	UFUNCTION(BlueprintCallable)
 	bool CheckPlayerTarget(ACHEnemyCharacter* Enemy, AP_Character* Character);
 
 	UFUNCTION(BlueprintCallable)

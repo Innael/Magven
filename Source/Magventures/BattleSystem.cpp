@@ -256,7 +256,7 @@ void UBattleSystem::StartTurn() {
 
 void UBattleSystem::EnemyTurn(ACHEnemyCharacter* Enemy) {
 
-	if (Enemy->Unconscious)
+	if (Enemy->Unconscious || !Enemy->CanAct)
 	{
 		NextFighterTurn();
 		return;
@@ -264,6 +264,87 @@ void UBattleSystem::EnemyTurn(ACHEnemyCharacter* Enemy) {
 		
 
 	float Distance = FVector::Dist(Enemy->GetActorLocation(), GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+
+	if (Enemy->MageClass)
+	{
+		if (!Enemy->CanSeeTarget(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+		{
+			Enemy->NeedMove = true;
+			Enemy->MoveEnd = false;
+			return;
+		}
+
+		TArray<int32> AffordableSpellIndices;
+
+		// Берем текущий запланированный уровень силы каста врага (например, 2 или 3 звезда)
+		int32 PowerLevel = Enemy->CastingSpellLevel;
+
+		// Безопасный предохранитель: если уровень силы сбит или равен 0, считаем по 1-му уровню
+		if (PowerLevel <= 0)
+			PowerLevel = 1;
+
+		bool NowCast = false;
+
+		// 2. Циклом пробегаемся по книге магии врага
+		for (int32 Index = 0; Index < Enemy->KnownSpells.Num(); ++Index)
+		{
+			USpellDataAsset* CurrentSpell = Enemy->KnownSpells[Index];
+
+			// Проверка на нулевой указатель (если в массиве вдруг оказался пустой слот)
+			if (CurrentSpell)
+			{
+				// Рассчитываем итоговую стоимость маны для этого заклинания на выбранном уровне силы				
+				float RequiredMana = CurrentSpell->SpellData.ManaCost * PowerLevel;
+
+				// Проверяем, хватает ли у вражеского мага текущей маны на этот каст
+				if (Enemy->CurrentMana >= RequiredMana)
+				{
+					if (CurrentSpell->SpellData.MaxCastDistance >= Distance)
+					{
+						AffordableSpellIndices.Add(Index);
+						NowCast = true;
+					}
+					
+				}
+			}
+		}
+
+		if (!NowCast)
+		{
+			Enemy->NeedMove = true;
+			Enemy->MoveEnd = false;
+			return;
+		}
+
+		// 3. Анализируем результат для выбора действия ИИ
+		if (AffordableSpellIndices.Num() > 0)
+		{			
+			NowCast = false;
+
+			while (!NowCast)
+			{
+				int32 RandomListPosition = FMath::RandRange(0, AffordableSpellIndices.Num() - 1);
+				int32 ChosenSpellIndex = AffordableSpellIndices[RandomListPosition];
+
+				// Достаем само заклинание, которое ИИ решил применить:
+				USpellDataAsset* AICheosenSpell = Enemy->KnownSpells[ChosenSpellIndex];
+				if (AICheosenSpell->SpellData.MaxCastDistance >= Distance)
+				{
+					NowCast = true;
+					MagicCombat(Enemy, ChosenSpellIndex);
+					return;
+				}
+			}
+			
+		}
+		else
+		{
+			// МАНЫ НЕТ: Все заклинания этой силы слишком дорогие для текущего запаса маны врага.
+			// ИИ врага должен принять альтернативное решение:
+			// 1. Попробовать снизить CastingSpellLevel до 1 и проверить массив заново?
+			// 2. Или пойти в обычную физическую атаку (Melee/Ranged), если магия недоступна?
+		}
+	}
 
 	if (Distance > AttackRange)
 	{
@@ -1565,6 +1646,30 @@ void UBattleSystem::RangedCombat(ACHEnemyCharacter* Enemy)
 		Enemy->ShotResult = 0;
 }
 
+void UBattleSystem::MagicCombat(ACHEnemyCharacter* Enemy, int32 SpellIndx) 
+{
+	Enemy->CastingSpellIndx = SpellIndx;
+	if (Enemy->KnownSpells[SpellIndx]->SpellData.TargetType == ESpellTargetType::SingleEnemy)
+	{
+		TArray<UCombatCharacterWrapper*> CharactersAtRange;
+		int32 CountCharatersAtRange = 0;
+
+		for (const auto& elem : CharactersPawns)
+		{
+			if (elem->PlayerPawn->Live)
+			{
+				++CountCharatersAtRange;
+				CharactersAtRange.Add(elem);
+			}
+		}
+
+		int32 TargetLock = GetRandomCombatValue(CountCharatersAtRange) - 1;
+		Enemy->CurrentTarget = CharactersAtRange[TargetLock]->PlayerPawn;
+	}
+
+	Enemy->NeedCastAttackSpell = true;
+}
+
 
 void UBattleSystem::EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult)
 {
@@ -1590,6 +1695,77 @@ void UBattleSystem::EnemyShoot(ACHEnemyCharacter* Enemy, int32 ShotResult)
 		Enemy->CurrentTarget->ChangeHealth(-RangeDamage);
 		Enemy->CurrentTarget->ChangeStamina(-ReciveAttackStaminaCost);
 		HUD->BtLog(WrappedString1 + tempStr + WrappedString2 + AttackResHit + FString::FromInt(RangeDamage) + AttackResDammage);
+	}
+	NextFighterTurn();
+}
+
+void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResult)
+{
+	USpellDataAsset* CurrentSpell = Enemy->KnownSpells[Enemy->CastingSpellIndx];
+	FString WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->Name);
+
+	if (CastResult == 0)
+	{
+		if (CurrentSpell->SpellData.TargetType == ESpellTargetType::SingleEnemy)
+		{
+			int32 MinMagicDamage = CurrentSpell->SpellData.MinPower * Enemy->CastingSpellLevel;
+			int32 MaxMagicDamage = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+
+			if (CurrentMagicDamage > 0)
+			{
+				CurrentMagicDamage = Enemy->TakeDamage(CurrentMagicDamage, CurrentSpell->SpellData.SpellDamageType, nullptr);
+
+				FString FullLog = FString::Printf(TEXT("%s плетёт %s, но ошибается и заклинание бьёт по нему и наносит %d урона"),
+					*WrappedString1, *CurrentSpell->SpellData.SpellName.ToString(), CurrentMagicDamage);
+				HUD->BtLog(FullLog);
+			}
+
+			if (CurrentSpell->SpellData.StatusEffectsToApply.Num() > 0)
+			{
+				FString FullLog = FString::Printf(TEXT("%s ошибается в плетении заклинания, и оно бьёт по нему."), *WrappedString1);
+				HUD->BtLog(FullLog);
+				TryApplySpellEffectsToEnemy(CurrentSpell->SpellData, Enemy->CastingSpellLevel, Enemy, nullptr);
+			}
+
+		}
+	}
+
+	if (CastResult == 1)
+	{
+		FString Fulllog = FString::Printf(TEXT("%s плетёт %s, но ошибается."), *WrappedString1, *CurrentSpell->SpellData.SpellName.ToString());
+		HUD->BtLog(Fulllog);		
+	}
+
+	if (CastResult == 2)
+	{
+		if (CurrentSpell->SpellData.TargetType == ESpellTargetType::SingleEnemy)
+		{
+			if (!Enemy->CurrentTarget)
+				return;
+
+			FString WrappedString2 = FormatLogName(Enemy->CurrentTarget->Name, Enemy->CurrentTarget->Position);
+
+			int32 MinMagicDamage = CurrentSpell->SpellData.MinPower * Enemy->CastingSpellLevel;
+			int32 MaxMagicDamage = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+			int32 CurrentMagicDamage = FMath ::RandRange(MinMagicDamage, MaxMagicDamage);
+
+			FString FullLog = FString::Printf(TEXT("%s плетёт %s."), *WrappedString1, *CurrentSpell->SpellData.SpellName.ToString());
+			HUD->BtLog(FullLog);
+
+			if (CurrentMagicDamage > 0)
+			{
+				CurrentMagicDamage = Enemy->CurrentTarget->TakeDamage(CurrentMagicDamage, CurrentSpell->SpellData.SpellDamageType, Enemy);
+
+				FullLog = FString::Printf(TEXT("%s получает %d урона"), *WrappedString2, CurrentMagicDamage);
+				HUD->BtLog(FullLog);
+			}
+
+			if (CurrentSpell->SpellData.StatusEffectsToApply.Num() > 0)
+			{				
+				TryApplySpellEffectsToPlayer(CurrentSpell->SpellData, Enemy->CastingSpellLevel, Enemy->CurrentTarget, Enemy);
+			}
+		}
 	}
 	NextFighterTurn();
 }
@@ -2538,7 +2714,7 @@ void UBattleSystem::PlayerAllAllyMagicCastEnd(AP_Character* Character, int32 Cas
 void UBattleSystem::TryApplySpellEffectsToEnemy(
 	const FSpellData& SpellData, int32 PowerLevel, ACHEnemyCharacter* TargetEnemy, AP_Character* Caster)
 {
-	if (!TargetEnemy || !TargetEnemy->Live || !Caster)
+	if (!TargetEnemy || !TargetEnemy->Live)
 		return;
 	if (SpellData.StatusEffectsToApply.Num() == 0)
 		return;
@@ -2746,7 +2922,7 @@ void UBattleSystem::TryApplySpellEffectsToEnemy(
 void UBattleSystem::TryApplySpellEffectsToPlayer(
 	const FSpellData& SpellData, int32 PowerLevel, AP_Character* TargetPlayer, ACHEnemyCharacter* Caster)
 {
-	if (!TargetPlayer || !TargetPlayer->Live || !Caster)
+	if (!TargetPlayer || !TargetPlayer->Live)
 		return;
 	if (SpellData.StatusEffectsToApply.Num() == 0)
 		return;

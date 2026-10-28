@@ -28,6 +28,9 @@ void ACHEnemyCharacter::Tick(float DeltaTime)
 }
 
 void ACHEnemyCharacter::ChangeHealth(float NewHealth) {
+	Health += NewHealth;
+	if (Health < 0)
+		Health = 0;
 }
 
 void ACHEnemyCharacter::ChangeStamina(float NewStamina) {
@@ -47,6 +50,13 @@ void ACHEnemyCharacter::ChangeStamina(float NewStamina) {
 		OnStatusChanged.Broadcast();
 	}
 
+}
+
+void ACHEnemyCharacter::ChangeMana(float NewMana)
+{
+	CurrentMana += NewMana;
+	if (CurrentMana < 0)
+		CurrentMana = 0;
 }
 
 void ACHEnemyCharacter::CheckStatus()

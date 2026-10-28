@@ -649,3 +649,53 @@ FText AP_Character::GetStatusEffectDisplayName(EStatusEffectType EffectType)
 	// ≈сли что-то пошло не так, возвращаем пустой текст
 	return FText::GetEmpty();
 }
+
+int32 AP_Character::TakeDamage(int32 RawDamage, EDamageType DamageType, ACHEnemyCharacter* Attacker)
+{
+	if (!Live || RawDamage <= 0)
+		return 0;
+
+	float ResistancePercent = 0.0f;
+
+	switch (DamageType)
+	{
+	case EDamageType::Physical:
+		ResistancePercent = CurrentResistances.Physical;
+		break;
+	case EDamageType::Fire:
+		ResistancePercent = CurrentResistances.Fire;
+		break;
+	case EDamageType::Cold:
+		ResistancePercent = CurrentResistances.Cold;
+		break;
+	case EDamageType::Electricity:
+		ResistancePercent = CurrentResistances.Electricity;
+		break;
+	case EDamageType::Light:
+		ResistancePercent = CurrentResistances.Light;
+		break;
+	case EDamageType::Poison:
+		ResistancePercent = CurrentResistances.Poison;
+		break;
+	case EDamageType::Chemical:
+		ResistancePercent = CurrentResistances.Chemical;
+		break;
+	case EDamageType::Mental:
+		ResistancePercent = CurrentResistances.Mental;
+		break;
+	case EDamageType::Death:
+		ResistancePercent = CurrentResistances.Death;
+		break;
+	case EDamageType::Magic:
+		ResistancePercent = CurrentResistances.Magic;
+		break;
+	default:
+		break;
+	}
+	
+	float DmgModifier = 1.0f - (ResistancePercent / 100.0f);
+	int32 FinalDamage = FMath::Max(1, FMath::RoundToInt(RawDamage * DmgModifier));
+
+	ChangeHealth(-FinalDamage);
+	return FinalDamage;
+}

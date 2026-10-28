@@ -44,6 +44,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Enemy Info")
 	int32 EnemyGroupID;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Magic")
+	TArray<class USpellDataAsset*> KnownSpells;
+
 	UPROPERTY(BlueprintReadWrite)
 	AP_Character* CurrentTarget;
 
@@ -63,6 +66,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Class")
 	bool ArcherClass = false;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Class")
+	bool MageClass = false;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weapon")
 	bool HaveLongWeapon = false;
@@ -89,6 +94,9 @@ public:
 	bool NeedShoot = false;
 
 	UPROPERTY(BlueprintReadWrite)
+	bool NeedCastAttackSpell = false;
+
+	UPROPERTY(BlueprintReadWrite)
 	bool MoveEnd = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
@@ -96,11 +104,14 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 ShotResult = 2;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 CastingSpellIndx = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth = 100.0f;
 
-	float Health = 100.0f;
+	float Health = MaxHealth;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Initiative")
 	int32 Initiative = 5;
@@ -145,22 +156,34 @@ public:
 	float CurrentDefence = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
-	float MaxStamina = 100;
+	float MaxStamina = 100.0f;
 
 	UPROPERTY(BlueprintReadWrite)
-	float CurrentStamina = 100;
+	float CurrentStamina = MaxStamina;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
-	float MaxMovementPoints = 100;
+	float MaxMana = 100.0f;
 
 	UPROPERTY(BlueprintReadWrite)
-	float CurrentMovementPoints = 100;	
+	float CurrentMana = MaxMana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
+	int32 CastingSpellLevel = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
+	float MaxMovementPoints = 100.0f;
+
+	UPROPERTY(BlueprintReadWrite)
+	float CurrentMovementPoints = MaxMovementPoints;	
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void ChangeHealth(float NewHealth);
 
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void ChangeStamina(float NewStamina);
+
+	UFUNCTION(BlueprintCallable, Category = "Mana")
+	void ChangeMana(float NewMana);
 
 	UFUNCTION(BlueprintCallable, Category = "Status")
 	void CheckStatus();
