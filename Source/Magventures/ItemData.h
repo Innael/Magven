@@ -67,6 +67,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	EWeaponType WeaponType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	EDamageType DamageType = EDamageType::Physical;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool RangeType = false;
 

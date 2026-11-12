@@ -50,6 +50,9 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	AP_Character* CurrentTarget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
+	ACHEnemyCharacter* ChosenAlly = nullptr;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
 	TArray<FActiveStatusEffect> ActiveStatusEffects;
 
@@ -63,6 +66,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Immunity")
 	FCombatImmunity StatusImmunity;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
+	FVector PlannedRadialCenter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Planned Action")
+	FRotator PlannedSectorDirection;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Class")
 	bool ArcherClass = false;
 
@@ -74,6 +83,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Health")
 	bool Live = true;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool InBattle = false;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool AlreadyMove = false;
@@ -130,6 +142,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentRangeAttack = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	EDamageType MeleeDamageType = EDamageType::Physical;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	EDamageType RangeDamageType = EDamageType::Physical;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	float CurrentDamage = 5;
@@ -166,6 +184,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	float CurrentMana = MaxMana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
+	int32 BaseSpellLevel = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat | Stats")
 	int32 CastingSpellLevel = 1;
@@ -213,5 +234,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	int32 TakeDamage(int32 RawDamage, EDamageType DamageType, AP_Character* Attacker);
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	int32 CalculateSpellPower(int32 SpellLevel);
 
 };

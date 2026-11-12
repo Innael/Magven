@@ -389,3 +389,12 @@ int32 ACHEnemyCharacter::TakeDamage(int32 RawDamage, EDamageType DamageType, AP_
 	ChangeHealth(-FinalDamage);
 	return FinalDamage;
 }
+
+int32 ACHEnemyCharacter::CalculateSpellPower(int32 SpellLevel) {
+	int32 SpellPower = BaseSpellLevel + 1 - SpellLevel;
+	if (SpellPower < 1)
+		SpellPower = 1;
+	if (SpellPower > 7)
+		SpellPower = 7;
+	return SpellPower;
+}
