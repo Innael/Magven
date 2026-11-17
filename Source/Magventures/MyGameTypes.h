@@ -71,7 +71,8 @@ enum class ESpellTargetType : uint8
 	EnemyGroup UMETA(DisplayName = "Группа врагов"),
 	AllEnemies UMETA(DisplayName = "Все враги"),
 	ConeSector UMETA(DisplayName = "Сектор перед собой"), // Бьет веером на ближнюю дистанцию
-	RadialSplash UMETA(DisplayName = "Радиальная зона") // Выбирается точка вдали, бьет по радиусу вокруг нее
+	RadialSplash UMETA(DisplayName = "Радиальная зона"),
+	GroupAllies UMETA(DisplayName = "Группа союзников"), // Выбирается точка вдали, бьет по радиусу вокруг нее
 };
 
 UENUM(BlueprintType)
@@ -134,7 +135,9 @@ enum class EAllySpellEffectType : uint8
 	ManaRegen UMETA(DisplayName = "Восстановление маны"),
 	Resurrection UMETA(DisplayName = "Воскрешение"),
 	BringToConsciousness UMETA(DisplayName = "Привести в сознание"),
-	CureParalysis UMETA(DisplayName = "Вылечить паралич")
+	CureParalysis UMETA(DisplayName = "Вылечить паралич"),
+	Antidote UMETA(DisplayName = "Противоядие"),
+	CureBlindness UMETA(DisplayName = "Вылечить слепоту")
 };
 
 UENUM(BlueprintType)

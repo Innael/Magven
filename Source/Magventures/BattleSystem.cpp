@@ -314,6 +314,7 @@ void UBattleSystem::EnemyTurn(ACHEnemyCharacter* Enemy) {
 		if (AffordableSpellIndices.Num() > 0)
 		{			
 			NowCast = false;
+			int32 SafetyСrutch = AffordableSpellIndices.Num() * 5;
 
 			while (!NowCast)
 			{
@@ -323,22 +324,213 @@ void UBattleSystem::EnemyTurn(ACHEnemyCharacter* Enemy) {
 				// Достаем само заклинание, которое ИИ решил применить:
 				USpellDataAsset* AICheosenSpell = Enemy->KnownSpells[ChosenSpellIndex];
 
-				if (AICheosenSpell->SpellData.MaxCastDistance >= Distance)
+				if (AICheosenSpell->SpellData.TargetType == ESpellTargetType::SingleAlly ||
+					AICheosenSpell->SpellData.TargetType == ESpellTargetType::GroupAllies ||
+					AICheosenSpell->SpellData.TargetType == ESpellTargetType::AllAllies)
 				{
-					NowCast = true;
+					if (AICheosenSpell->SpellData.PositiveEffect == EAllySpellEffectType::Healing)
+					{
+						for (const auto& elem : Fighters)
+						{
+							if (elem->WType == 'E' && elem->EnemyCharacter->Live)
+							{
+								const float MaxDistanceSquared = FMath::Square(AICheosenSpell->SpellData.MaxCastDistance);
+								const float DistSq =
+									FVector::DistSquared(Enemy->GetActorLocation(), elem->EnemyCharacter->GetActorLocation());
+								if (MaxDistanceSquared >= DistSq)
+								{
+									if (elem->EnemyCharacter->Health < elem->EnemyCharacter->MaxHealth)
+									{
+										Enemy->ChosenAlly = elem->EnemyCharacter;
+										NowCast = true;
+										MagicCombat(Enemy, ChosenSpellIndex);
+										return;
+									}
+								}
+							}
+						}
+					}
 
-					Enemy->PlannedRadialCenter = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+					if (AICheosenSpell->SpellData.PositiveEffect == EAllySpellEffectType::Rest)
+					{
+						for (const auto& elem : Fighters)
+						{
+							if (elem->WType == 'E' && elem->EnemyCharacter->Live)
+							{
+								const float MaxDistanceSquared = FMath::Square(AICheosenSpell->SpellData.MaxCastDistance);
+								const float DistSq =
+									FVector::DistSquared(Enemy->GetActorLocation(), elem->EnemyCharacter->GetActorLocation());
+								if (MaxDistanceSquared >= DistSq)
+								{
+									if (elem->EnemyCharacter->CurrentStamina < elem->EnemyCharacter->MaxStamina / 2)
+									{
+										Enemy->ChosenAlly = elem->EnemyCharacter;
+										NowCast = true;
+										MagicCombat(Enemy, ChosenSpellIndex);
+										return;
+									}
+								}
+							}
+						}
+					}
 
-					APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+					if (AICheosenSpell->SpellData.PositiveEffect == EAllySpellEffectType::ManaRegen)
+					{
+						for (const auto& elem : Fighters)
+						{
+							if (elem->WType == 'E' && elem->EnemyCharacter->Live)
+							{
+								const float MaxDistanceSquared = FMath::Square(AICheosenSpell->SpellData.MaxCastDistance);
+								const float DistSq =
+									FVector::DistSquared(Enemy->GetActorLocation(), elem->EnemyCharacter->GetActorLocation());
+								if (MaxDistanceSquared >= DistSq)
+								{
+									if (elem->EnemyCharacter->CurrentMana < elem->EnemyCharacter->MaxMana / 2)
+									{
+										Enemy->ChosenAlly = elem->EnemyCharacter;
+										NowCast = true;
+										MagicCombat(Enemy, ChosenSpellIndex);
+										return;
+									}
+								}
+							}
+						}
+					}
 
-					FVector Direction = PlayerPawn->GetActorLocation() - Enemy->GetActorLocation();
-					Enemy->PlannedSectorDirection = Direction.Rotation();
-					Enemy->PlannedSectorDirection.Pitch = 0.0f;
-					Enemy->PlannedSectorDirection.Roll = 0.0f;
+					if (AICheosenSpell->SpellData.PositiveEffect == EAllySpellEffectType::CureParalysis)
+					{
+						for (const auto& elem : Fighters)
+						{
+							if (elem->WType == 'E' && elem->EnemyCharacter->Live)
+							{
+								const float MaxDistanceSquared = FMath::Square(AICheosenSpell->SpellData.MaxCastDistance);
+								const float DistSq =
+									FVector::DistSquared(Enemy->GetActorLocation(), elem->EnemyCharacter->GetActorLocation());
+								if (MaxDistanceSquared >= DistSq)
+								{
+									if (elem->EnemyCharacter->ActiveStatusEffects.Num() > 0)
+									{
+										for (const auto& Eff : elem->EnemyCharacter->ActiveStatusEffects)
+											if (Eff.EffectType == EStatusEffectType::Paralysis)
+											{
+												Enemy->ChosenAlly = elem->EnemyCharacter;
+												NowCast = true;
+												MagicCombat(Enemy, ChosenSpellIndex);
+												return;
+											}
+									}
+								}
+							}
+						}
+					}
 
-					MagicCombat(Enemy, ChosenSpellIndex);
-					return;
+					if (AICheosenSpell->SpellData.PositiveEffect == EAllySpellEffectType::Antidote)
+					{
+						for (const auto& elem : Fighters)
+						{
+							if (elem->WType == 'E' && elem->EnemyCharacter->Live)
+							{
+								const float MaxDistanceSquared = FMath::Square(AICheosenSpell->SpellData.MaxCastDistance);
+								const float DistSq =
+									FVector::DistSquared(Enemy->GetActorLocation(), elem->EnemyCharacter->GetActorLocation());
+								if (MaxDistanceSquared >= DistSq)
+								{
+									if (elem->EnemyCharacter->ActiveStatusEffects.Num() > 0)
+									{
+										for (const auto& Eff : elem->EnemyCharacter->ActiveStatusEffects)
+											if (Eff.EffectType == EStatusEffectType::Poison)
+											{
+												Enemy->ChosenAlly = elem->EnemyCharacter;
+												NowCast = true;
+												MagicCombat(Enemy, ChosenSpellIndex);
+												return;
+											}
+									}
+								}
+							}
+						}
+					}
+
+					if (AICheosenSpell->SpellData.PositiveEffect == EAllySpellEffectType::CureNegative)
+					{
+						for (const auto& elem : Fighters)
+						{
+							if (elem->WType == 'E' && elem->EnemyCharacter->Live)
+							{
+								const float MaxDistanceSquared = FMath::Square(AICheosenSpell->SpellData.MaxCastDistance);
+								const float DistSq =
+									FVector::DistSquared(Enemy->GetActorLocation(), elem->EnemyCharacter->GetActorLocation());
+								if (MaxDistanceSquared >= DistSq)
+								{
+									if (elem->EnemyCharacter->ActiveStatusEffects.Num() > 0)
+									{
+										for (const auto& Eff : elem->EnemyCharacter->ActiveStatusEffects)
+											if (Eff.EffectType == EStatusEffectType::Bleed ||
+												Eff.EffectType == EStatusEffectType::Malaise || Eff.EffectType == EStatusEffectType::Irritation)
+											{
+												Enemy->ChosenAlly = elem->EnemyCharacter;
+												NowCast = true;
+												MagicCombat(Enemy, ChosenSpellIndex);
+												return;
+											}
+									}
+								}
+							}
+						}
+					}
+
+					if (AICheosenSpell->SpellData.PositiveEffect == EAllySpellEffectType::BringToConsciousness)
+					{
+						for (const auto& elem : Fighters)
+						{
+							if (elem->WType == 'E' && elem->EnemyCharacter->Live)
+							{
+								const float MaxDistanceSquared = FMath::Square(AICheosenSpell->SpellData.MaxCastDistance);
+								const float DistSq =
+									FVector::DistSquared(Enemy->GetActorLocation(), elem->EnemyCharacter->GetActorLocation());
+								if (MaxDistanceSquared >= DistSq)
+								{
+									if (elem->EnemyCharacter->ActiveStatusEffects.Num() > 0)
+									{
+										for (const auto& Eff : elem->EnemyCharacter->ActiveStatusEffects)
+											if (Eff.EffectType == EStatusEffectType::Stun ||
+												Eff.EffectType == EStatusEffectType::Sleep )
+											{
+												Enemy->ChosenAlly = elem->EnemyCharacter;
+												NowCast = true;
+												MagicCombat(Enemy, ChosenSpellIndex);
+												return;
+											}
+									}
+								}
+							}
+						}
+					}
+
+					--SafetyСrutch;
+					if (SafetyСrutch < 1)
+						break;
+
+				}else
+				{
+					if (AICheosenSpell->SpellData.MaxCastDistance >= Distance)
+					{
+						NowCast = true;
+
+						Enemy->PlannedRadialCenter = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+
+						APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+
+						FVector Direction = PlayerPawn->GetActorLocation() - Enemy->GetActorLocation();
+						Enemy->PlannedSectorDirection = Direction.Rotation();
+						Enemy->PlannedSectorDirection.Pitch = 0.0f;
+						Enemy->PlannedSectorDirection.Roll = 0.0f;
+
+						MagicCombat(Enemy, ChosenSpellIndex);
+						return;
+					}
 				}
+				
 			}
 			
 		}
