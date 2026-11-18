@@ -27,6 +27,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	FText GetStatusEffectDisplayName(EStatusEffectType EffectType);
+
 
 public:	
 	// Called every frame
@@ -231,6 +233,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BattleLog")
 	void AppealToHUD(const FString& Entry);
+
+	UFUNCTION(BlueprintCallable, Category = "Healing")
+	void CureStatusEffect(EStatusEffectType EffectToCure, int32 CurePower, const FString& FormatedName);
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	int32 TakeDamage(int32 RawDamage, EDamageType DamageType, AP_Character* Attacker);
