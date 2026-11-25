@@ -9,7 +9,7 @@
 class AP_Character;
 class ACHEnemyCharacter;
 
-UCLASS()
+UCLASS(BlueprintType)
 class MAGVENTURES_API UCombatCharacterWrapper : public UObject
 {
 	GENERATED_BODY()	

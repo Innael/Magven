@@ -120,7 +120,8 @@ enum class ESpellProjectileType : uint8
 	Lightning UMETA(DisplayName = "Молния"),
 	PoisonCloud UMETA(DisplayName = "Облако яда"),
 	FlameConus UMETA(DisplayName = "Огненный конус"),
-	GlassConus UMETA(DisplayName = "Конус стеклянной пыли")
+	GlassConus UMETA(DisplayName = "Конус стеклянной пыли"),
+	PoisonConus UMETA(DisplayName = "Конус яда")
 	// Сюда вы сможете дописывать любые новые типы визуальных снарядов
 };
 

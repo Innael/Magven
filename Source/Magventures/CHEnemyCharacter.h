@@ -1,4 +1,4 @@
-// Magventures Game by Bolshakov Sergey.  All RightsReserved.
+п»ї// Magventures Game by Bolshakov Sergey.  All RightsReserved.
 
 #pragma once
 
@@ -61,7 +61,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes | Base")
 	FCombatResistances BaseResistances;
 
-	/** Текущие резисты с учетом наложенных баффов/дебаффов (именно они участвуют в формуле урона) */
+	/** РўРµРєСѓС‰РёРµ СЂРµР·РёСЃС‚С‹ СЃ СѓС‡РµС‚РѕРј РЅР°Р»РѕР¶РµРЅРЅС‹С… Р±Р°С„С„РѕРІ/РґРµР±Р°С„С„РѕРІ (РёРјРµРЅРЅРѕ РѕРЅРё СѓС‡Р°СЃС‚РІСѓСЋС‚ РІ С„РѕСЂРјСѓР»Рµ СѓСЂРѕРЅР°) */
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes | Current")
 	FCombatResistances CurrentResistances;
 
@@ -225,7 +225,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Initiative")
 	void RecalculateInitiative();
 
-	UFUNCTION(BlueprintCallable, Category = "Сombat Qualities")
+	UFUNCTION(BlueprintCallable, Category = "РЎombat Qualities")
 	void UpdateCombatQualities();
 
 	UFUNCTION(BlueprintCallable, Category = "TickStatusEffects")

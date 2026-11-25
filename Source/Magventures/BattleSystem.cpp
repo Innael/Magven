@@ -1434,6 +1434,7 @@ void UBattleSystem::EndTurn() {
 				{
 					float StRegen = elem->EnemyCharacter->MaxStamina / 10;
 					elem->EnemyCharacter->ChangeStamina(StRegen);
+					elem->EnemyCharacter->TickStatusEffects();
 					elem->EnemyCharacter->CheckStatus();
 					elem->EnemyCharacter->CurrentMovementPoints = elem->EnemyCharacter->MaxMovementPoints;
 					if (elem->EnemyCharacter->CanAct)
@@ -1928,6 +1929,7 @@ void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResu
 				FString FullLog = FString::Printf(TEXT("%s ошибается в плетении заклинания, и оно бьёт по нему."), *WrappedString1);
 				HUD->BtLog(FullLog);
 				TryApplySpellEffectsToEnemy(CurrentSpell->SpellData, Enemy->CastingSpellLevel, Enemy, nullptr);
+				Enemy->UpdateCombatQualities();
 			}
 		}
 
@@ -2304,9 +2306,9 @@ void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResu
 
 				WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->ChosenAlly->Name);
 
-				Enemy->CureStatusEffect(EStatusEffectType::Bleed, CurrentMagicCurePower, WrappedString1);
-				Enemy->CureStatusEffect(EStatusEffectType::Irritation, CurrentMagicCurePower, WrappedString1);
-				Enemy->CureStatusEffect(EStatusEffectType::Malaise, CurrentMagicCurePower, WrappedString1);				
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Bleed, CurrentMagicCurePower, WrappedString1);
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Irritation, CurrentMagicCurePower, WrappedString1);
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Malaise, CurrentMagicCurePower, WrappedString1);				
 			}
 
 			if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::BringToConsciousness)
@@ -2314,10 +2316,10 @@ void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResu
 				int32 CurrentMagicCurePower = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
 
 				WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->ChosenAlly->Name);
-				Enemy->ChangeStamina(25);
+				Enemy->ChosenAlly->ChangeStamina(25);
 
-				Enemy->CureStatusEffect(EStatusEffectType::Stun, CurrentMagicCurePower, WrappedString1);
-				Enemy->CureStatusEffect(EStatusEffectType::Sleep, CurrentMagicCurePower, WrappedString1);
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Stun, CurrentMagicCurePower, WrappedString1);
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Sleep, CurrentMagicCurePower, WrappedString1);
 			}
 
 			if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::CureParalysis)
@@ -2326,7 +2328,7 @@ void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResu
 
 				WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->ChosenAlly->Name);
 
-				Enemy->CureStatusEffect(EStatusEffectType::Paralysis, CurrentMagicCurePower, WrappedString1);
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Paralysis, CurrentMagicCurePower, WrappedString1);
 			}
 
 			if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::Antidote)
@@ -2335,7 +2337,7 @@ void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResu
 
 				WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->ChosenAlly->Name);
 
-				Enemy->CureStatusEffect(EStatusEffectType::Poison, CurrentMagicCurePower, WrappedString1);
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Poison, CurrentMagicCurePower, WrappedString1);
 			}
 
 			if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::CureBlindness)
@@ -2344,7 +2346,7 @@ void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResu
 
 				WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *Enemy->ChosenAlly->Name);
 
-				Enemy->CureStatusEffect(EStatusEffectType::Blind, CurrentMagicCurePower, WrappedString1);
+				Enemy->ChosenAlly->CureStatusEffect(EStatusEffectType::Blind, CurrentMagicCurePower, WrappedString1);
 			}
 		}
 
@@ -2452,6 +2454,108 @@ void UBattleSystem::EnemyAttackMagicEnd(ACHEnemyCharacter* Enemy, int32 CastResu
 				}
 			}
 		}
+
+		if (CurrentSpell->SpellData.TargetType == ESpellTargetType::AllAllies)
+		{
+			FString FullLog = FString::Printf(TEXT("%s плетёт %s"), *WrappedString1, *CurrentSpell->SpellData.SpellName.ToString());
+			HUD->BtLog(FullLog);
+
+			for (const auto& elem : Fighters)
+			{
+				if (elem->WType == 'E')
+				{
+					
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::Healing)
+					{
+						int32 MinMagicHealing = CurrentSpell->SpellData.MinPower * Enemy->CastingSpellLevel;
+						int32 MaxMagicHealing = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+						int32 CurrentMagicHealing = FMath ::RandRange(MinMagicHealing, MaxMagicHealing);
+
+						elem->EnemyCharacter->ChangeHealth(CurrentMagicHealing);
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+						FullLog = FString::Printf(TEXT("%s восстанавливает %d здоровья."), *WrappedString1, CurrentMagicHealing);
+						HUD->BtLog(FullLog);
+					}
+
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::Rest)
+					{
+						int32 MinMagicRest = CurrentSpell->SpellData.MinPower * Enemy->CastingSpellLevel;
+						int32 MaxMagicRest = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+						int32 CurrentMagicRest = FMath ::RandRange(MinMagicRest, MaxMagicRest);
+
+						elem->EnemyCharacter->ChangeStamina(CurrentMagicRest);
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+						FullLog = FString::Printf(TEXT("%s востанавливает %d выносливости."), *WrappedString1, CurrentMagicRest);
+						HUD->BtLog(FullLog);
+					}
+
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::ManaRegen)
+					{
+						int32 MinMagicManaRegen = CurrentSpell->SpellData.MinPower * Enemy->CastingSpellLevel;
+						int32 MaxMagicManaRegen = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+						int32 CurrentMagicManaRegen = FMath ::RandRange(MinMagicManaRegen, MaxMagicManaRegen);
+
+						elem->EnemyCharacter->ChangeMana(CurrentMagicManaRegen);
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+						FullLog = FString::Printf(TEXT("%s востанавливает %d магической энергии."), *WrappedString1, CurrentMagicManaRegen);
+						HUD->BtLog(FullLog);
+					}
+
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::CureNegative)
+					{
+						int32 CurrentMagicCurePower = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Bleed, CurrentMagicCurePower, WrappedString1);
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Irritation, CurrentMagicCurePower, WrappedString1);
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Malaise, CurrentMagicCurePower, WrappedString1);
+					}
+
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::BringToConsciousness)
+					{
+						int32 CurrentMagicCurePower = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+						elem->EnemyCharacter->ChangeStamina(25);
+
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Stun, CurrentMagicCurePower, WrappedString1);
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Sleep, CurrentMagicCurePower, WrappedString1);
+					}
+
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::CureParalysis)
+					{
+						int32 CurrentMagicCurePower = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Paralysis, CurrentMagicCurePower, WrappedString1);
+					}
+
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::Antidote)
+					{
+						int32 CurrentMagicCurePower = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Poison, CurrentMagicCurePower, WrappedString1);
+					}
+
+					if (CurrentSpell->SpellData.PositiveEffect == EAllySpellEffectType::CureBlindness)
+					{
+						int32 CurrentMagicCurePower = CurrentSpell->SpellData.MaxPower * Enemy->CastingSpellLevel;
+
+						WrappedString1 = FString::Printf(TEXT("<Red>%s</>"), *elem->EnemyCharacter->Name);
+
+						elem->EnemyCharacter->CureStatusEffect(EStatusEffectType::Blind, CurrentMagicCurePower, WrappedString1);
+					}					
+				}
+			}
+		}
+
 	}
 	NextFighterTurn();
 }
@@ -3318,6 +3422,83 @@ void UBattleSystem::PlayerSyngleAllyMagicCastEnd(AP_Character* Character, int32 
 	NextFighterTurn();
 }
 
+void UBattleSystem::PlayerGroupAllyMagicCastEnd(AP_Character* Character, int32 CastResult)
+{
+
+	if (!Character)
+	{
+		NextFighterTurn();
+		return;
+	}
+
+	FString CastName = Character->PlannedSpellData.SpellName.ToString();
+	FString WrappedString2 = FormatLogName(Character->Name, Character->Position);
+
+	float ManaCost = Character->PlannedSpellData.ManaCost * Character->PlannedSpellPowerLevel;
+	Character->ChangeMana(-ManaCost);
+
+	if (CastResult < 2)
+	{
+		FString FullLog = FString::Printf(TEXT("%s терпит неудачу в плетении заклинания."), *WrappedString2);
+		HUD->BtLog(FullLog);
+	}
+	else if (CastResult == 2)
+	{
+
+		FString FullLog = FString::Printf(TEXT("%s плетёт %s, в результате:"), *WrappedString2, *CastName);
+		HUD->BtLog(FullLog);
+
+		for (const auto& elem : CharactersPawns)
+		{
+			if (elem->PlayerPawn)
+			{
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::Healing)
+				{
+					int32 MinMagicHeal = Character->PlannedSpellData.MinPower * Character->PlannedSpellPowerLevel;
+					int32 MaxMagicHeal = Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel;
+					int32 CurrentMagicHeal = FMath ::RandRange(MinMagicHeal, MaxMagicHeal);
+
+					elem->PlayerPawn->ChangeHealth(CurrentMagicHeal);
+
+					FString WrappedString1 = FormatLogName(elem->PlayerPawn->Name, elem->PlayerPawn->Position);
+					FullLog = FString::Printf(TEXT("%s восстанавливает %d здоровья."), *WrappedString1, CurrentMagicHeal);
+					HUD->BtLog(FullLog);
+				}
+
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::CureNegative)
+				{
+					FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+					Character->ChosenAlly->CureStatusEffect(
+						EStatusEffectType::Bleed, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+					Character->ChosenAlly->CureStatusEffect(EStatusEffectType::Malaise,
+						Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+					Character->ChosenAlly->CureStatusEffect(EStatusEffectType::Irritation,
+						Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+				}
+
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::BringToConsciousness)
+				{
+					FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+					Character->ChosenAlly->CureStatusEffect(
+						EStatusEffectType::Stun, Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+				}
+
+				if (Character->PlannedSpellData.PositiveEffect == EAllySpellEffectType::CureParalysis)
+				{
+					FString WrappedString1 = FormatLogName(Character->ChosenAlly->Name, Character->ChosenAllyIndx);
+
+					Character->ChosenAlly->CureStatusEffect(EStatusEffectType::Paralysis,
+						Character->PlannedSpellData.MaxPower * Character->PlannedSpellPowerLevel, WrappedString1);
+				}
+			}
+		}
+	}
+
+	NextFighterTurn();
+}
+
 void UBattleSystem::PlayerAllAllyMagicCastEnd(AP_Character* Character, int32 CastResult)
 {
 
@@ -3516,8 +3697,7 @@ void UBattleSystem::TryApplySpellEffectsToEnemy(
 					{
 						ExistingEffect.Power = NewPower;
 						ExistingEffect.RemainingDuration = NewDuration;
-						ExistingEffect.Caster = Caster; // Меняем хозяина эффекта на более сильного мага
-						
+						ExistingEffect.Caster = Caster; // Меняем хозяина эффекта на более сильного мага						
 					}
 					else
 					{

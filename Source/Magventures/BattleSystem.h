@@ -197,7 +197,9 @@ protected:
 	void PlayerTurn(AP_Character* Character);
 
 	FString FormatLogName(FString CharName, int32 TypeIndex);
-	
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	const TArray<UCombatCharacterWrapper*>& GetFighters() const { return Fighters; }	
 
 	void EndTurn();
 
@@ -248,6 +250,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayerSyngleAllyMagicCastEnd(AP_Character* Character, int32 CastResult);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerGroupAllyMagicCastEnd(AP_Character* Character, int32 CastResult);
 
 	UFUNCTION(BlueprintCallable)
 	void PlayerAllAllyMagicCastEnd(AP_Character* Character, int32 CastResult);

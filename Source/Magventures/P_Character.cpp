@@ -610,7 +610,6 @@ void AP_Character::CureStatusEffect(EStatusEffectType EffectToCure, int32 CurePo
 				FText EffectName = GetStatusEffectDisplayName(ActiveStatusEffects[i].EffectType);
 				FString FullLog =
 					FString::Printf(TEXT("Ёффект %s у персонажа %s, ослаблен, но продолжает действовать."), *EffectName.ToString(), *FormatedName);
-				ActiveStatusEffects.RemoveAt(i);
 
 				AppealToHUD(FullLog);
 			}
