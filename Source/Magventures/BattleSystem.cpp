@@ -1450,6 +1450,7 @@ void UBattleSystem::EndTurn() {
 				{
 					float StRegen = elem->PlayerPawn->MaxStamina / 10;
 					elem->PlayerPawn->ChangeStamina(StRegen);
+					elem->PlayerPawn->TickStatusEffects();
 					elem->PlayerPawn->AlreadyMove = false;
 					elem->AlMov = false;
 				}								

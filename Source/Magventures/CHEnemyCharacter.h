@@ -58,6 +58,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
 	TArray<FActiveStatusEffect> ActiveStatusEffects;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
+	TArray<FActiveStatusEffect> ActivePositiveEffects;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes | Base")
 	FCombatResistances BaseResistances;
 

@@ -1,4 +1,4 @@
-// Magventures Game by Bolshakov Sergey.  All RightsReserved.
+п»ї// Magventures Game by Bolshakov Sergey.  All RightsReserved.
 
 
 #include "P_Character.h"
@@ -588,19 +588,19 @@ void AP_Character::UpdateCombatQualities()
 
 void AP_Character::CureStatusEffect(EStatusEffectType EffectToCure, int32 CurePower, const FString& FormatedName)
 {
-	// Пробегаемся по массиву активных эффектов с конца (чтобы безопасно удалять элементы)
+	// РџСЂРѕР±РµРіР°РµРјСЃСЏ РїРѕ РјР°СЃСЃРёРІСѓ Р°РєС‚РёРІРЅС‹С… СЌС„С„РµРєС‚РѕРІ СЃ РєРѕРЅС†Р° (С‡С‚РѕР±С‹ Р±РµР·РѕРїР°СЃРЅРѕ СѓРґР°Р»СЏС‚СЊ СЌР»РµРјРµРЅС‚С‹)
 	for (int32 i = ActiveStatusEffects.Num() - 1; i >= 0; --i)
 	{
 		if (ActiveStatusEffects[i].EffectType == EffectToCure)
 		{
-			// Вычитаем силу лечения из силы дебаффа
+			// Р’С‹С‡РёС‚Р°РµРј СЃРёР»Сѓ Р»РµС‡РµРЅРёСЏ РёР· СЃРёР»С‹ РґРµР±Р°С„С„Р°
 			ActiveStatusEffects[i].Power -= CurePower;
 
-			// Если сила эффекта упала до нуля или ниже — дебафф побежден!
+			// Р•СЃР»Рё СЃРёР»Р° СЌС„С„РµРєС‚Р° СѓРїР°Р»Р° РґРѕ РЅСѓР»СЏ РёР»Рё РЅРёР¶Рµ вЂ” РґРµР±Р°С„С„ РїРѕР±РµР¶РґРµРЅ!
 			if (ActiveStatusEffects[i].Power <= 0)
 			{
 				FText EffectName = GetStatusEffectDisplayName(ActiveStatusEffects[i].EffectType);
-				FString FullLog = FString::Printf(TEXT("%s - эффект %s, снят."), *FormatedName, *EffectName.ToString());
+				FString FullLog = FString::Printf(TEXT("%s - СЌС„С„РµРєС‚ %s, СЃРЅСЏС‚."), *FormatedName, *EffectName.ToString());
 				ActiveStatusEffects.RemoveAt(i);
 
 				AppealToHUD(FullLog);
@@ -609,7 +609,7 @@ void AP_Character::CureStatusEffect(EStatusEffectType EffectToCure, int32 CurePo
 			{
 				FText EffectName = GetStatusEffectDisplayName(ActiveStatusEffects[i].EffectType);
 				FString FullLog =
-					FString::Printf(TEXT("Эффект %s у персонажа %s, ослаблен, но продолжает действовать."), *EffectName.ToString(), *FormatedName);
+					FString::Printf(TEXT("Р­С„С„РµРєС‚ %s Сѓ РїРµСЂСЃРѕРЅР°Р¶Р° %s, РѕСЃР»Р°Р±Р»РµРЅ, РЅРѕ РїСЂРѕРґРѕР»Р¶Р°РµС‚ РґРµР№СЃС‚РІРѕРІР°С‚СЊ."), *EffectName.ToString(), *FormatedName);
 
 				AppealToHUD(FullLog);
 			}
@@ -630,22 +630,22 @@ void AP_Character::AppealToHUD(const FString& Entry)
 
 FText AP_Character::GetStatusEffectDisplayName(EStatusEffectType EffectType)
 {
-	// 1. Находим объект рефлексии нашего перечисления по его точному C++ имени
+	// 1. РќР°С…РѕРґРёРј РѕР±СЉРµРєС‚ СЂРµС„Р»РµРєСЃРёРё РЅР°С€РµРіРѕ РїРµСЂРµС‡РёСЃР»РµРЅРёСЏ РїРѕ РµРіРѕ С‚РѕС‡РЅРѕРјСѓ C++ РёРјРµРЅРё
 	const UEnum* EnumPtr = StaticEnum<EStatusEffectType>();
 
 	if (EnumPtr)
 	{
-		// 2. Превращаем наш enum-элемент в обычное число (индекс строки)
+		// 2. РџСЂРµРІСЂР°С‰Р°РµРј РЅР°С€ enum-СЌР»РµРјРµРЅС‚ РІ РѕР±С‹С‡РЅРѕРµ С‡РёСЃР»Рѕ (РёРЅРґРµРєСЃ СЃС‚СЂРѕРєРё)
 		int32 EnumIndex = EnumPtr->GetIndexByValue(static_cast<int64>(EffectType));
 
 		if (EnumIndex != INDEX_NONE)
 		{
-			// 3. Вытаскиваем красивое Display Name на текущем языке локализации игры!
+			// 3. Р’С‹С‚Р°СЃРєРёРІР°РµРј РєСЂР°СЃРёРІРѕРµ Display Name РЅР° С‚РµРєСѓС‰РµРј СЏР·С‹РєРµ Р»РѕРєР°Р»РёР·Р°С†РёРё РёРіСЂС‹!
 			return EnumPtr->GetDisplayNameTextByIndex(EnumIndex);
 		}
 	}
 
-	// Если что-то пошло не так, возвращаем пустой текст
+	// Р•СЃР»Рё С‡С‚Рѕ-С‚Рѕ РїРѕС€Р»Рѕ РЅРµ С‚Р°Рє, РІРѕР·РІСЂР°С‰Р°РµРј РїСѓСЃС‚РѕР№ С‚РµРєСЃС‚
 	return FText::GetEmpty();
 }
 
@@ -697,4 +697,70 @@ int32 AP_Character::TakeDamage(int32 RawDamage, EDamageType DamageType, ACHEnemy
 
 	ChangeHealth(-FinalDamage);
 	return FinalDamage;
+}
+
+void AP_Character::TickStatusEffects()
+{
+	for (int32 i = ActiveStatusEffects.Num() - 1; i >= 0; --i)
+	{
+
+		ActiveStatusEffects[i].RemainingDuration -= 1;
+
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Poison)
+		{
+			int32 PoisonDamage = TakeDamage(ActiveStatusEffects[i].Power, EDamageType::Poison, nullptr);
+			FString WrappedString1 = FString::Printf(TEXT("<%d>%s</>"), Position, *Name);			
+			FString FullLog = FString::Printf(TEXT("%s РїРѕР»СѓС‡Р°РµС‚ %d СѓСЂРѕРЅР°, РѕС‚ СЏРґР°."), *WrappedString1, PoisonDamage);
+			AppealToHUD(FullLog);
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Stun)
+		{
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Blind)
+		{
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Bleed)
+		{
+			int32 BleedDamage = TakeDamage(ActiveStatusEffects[i].Power, EDamageType::Poison, nullptr);
+			FString WrappedString1 = FString::Printf(TEXT("<%d>%s</>"), Position, *Name);
+			FString FullLog = FString::Printf(TEXT("%s РїРѕР»СѓС‡Р°РµС‚ %d СѓСЂРѕРЅР° РѕС‚ РєСЂРѕРІРѕС‚РµС‡РµРЅРёСЏ."), *WrappedString1, BleedDamage);
+			AppealToHUD(FullLog);
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Regeneration)
+		{
+			int32 RegenCount = ActiveStatusEffects[i].Power * 3;
+			ChangeHealth(RegenCount);
+			FString WrappedString1 = FString::Printf(TEXT("<%d>%s</>"), Position, *Name);
+			FString FullLog = FString::Printf(TEXT("Р Р°РЅС‹ %s Р·Р°С‚СЏРіРёРІР°СЋС‚СЃСЏ Рё РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ %d Р·РґРѕСЂРѕРІСЊСЏ."), *WrappedString1, RegenCount);
+			AppealToHUD(FullLog);
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Malaise)
+		{
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Irritation)
+		{
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Paralysis)
+		{
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Slowdown)
+		{
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Fatigue)
+		{
+		}
+		if (ActiveStatusEffects[i].EffectType == EStatusEffectType::Sleep)
+		{
+			ChangeStamina(10);
+		}
+
+		if (ActiveStatusEffects[i].RemainingDuration <= 0)
+		{
+			ActiveStatusEffects.RemoveAt(i);
+		}
+
+		UpdateCombatQualities();
+
+		DebaffStatusChangedToUI.Broadcast(Position);
+	}
 }

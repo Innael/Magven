@@ -74,6 +74,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
 	TArray<FActiveStatusEffect> ActiveStatusEffects;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Status Effects")
+	TArray<FActiveStatusEffect> ActivePositiveEffects;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes | Base")
 	FCombatResistances BaseResistances;
 
@@ -341,6 +344,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	int32 TakeDamage(int32 RawDamage, EDamageType DamageType, ACHEnemyCharacter* Attacker);
+
+	UFUNCTION(BlueprintCallable, Category = "TickStatusEffects")
+	void TickStatusEffects();
 
 };
 
